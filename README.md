@@ -82,6 +82,7 @@ See how Rybbit compares to other analytics solutions:
 | **Frog 🐸**                       | ✅     | ❌         | ❌         | ❌         |
 
 \* Plausible's Community Edition has very limited features compared to their cloud version
+
 \*\* Only available on paid tiers
 
 <hr>
