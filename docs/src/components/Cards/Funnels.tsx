@@ -1,14 +1,67 @@
 import { Card } from "./Card";
-import { Filter } from "lucide-react";
+import { Eye, Filter } from "lucide-react";
+
+const funnelData = [
+  {
+    step: 1,
+    label: "Homepage",
+    users: 608,
+  },
+  {
+    step: 2,
+    label: "Signup",
+    users: 59,
+  },
+  {
+    step: 4,
+    label: "Purchase",
+    users: 5,
+  },
+];
 
 export function Funnels() {
+  const totalUsers = funnelData[0].users;
+
   return (
     <Card
       title="Conversion Funnels"
       description="Visualize user journeys and identify where users drop off."
+      icon={Filter}
     >
-      <div className="bg-neutral-900 rounded-lg p-4 h-[200px] flex items-center justify-center">
-        <Filter className="w-16 h-16 text-neutral-600 rotate-180" />
+      {/* Funnel Steps */}
+      <div className="space-y-4 mt-4">
+        {funnelData.map((item, index) => {
+          const overallConversion = (item.users / totalUsers) * 100;
+          const previousUsers = index > 0 ? funnelData[index - 1].users : item.users;
+
+          return (
+            <div key={item.step} className="flex items-center gap-3">
+              {/* Step number */}
+              <div className="flex-shrink-0 w-8 h-8 mt-7 bg-neutral-800 rounded-full flex items-center justify-center text-xs">
+                {item.step}
+              </div>
+
+              {/* Step info and bars */}
+              <div className="flex-1">
+                {/* Label and counts */}
+                <div className="flex items-center gap-2 mb-2">
+                  <Eye className="w-4 h-4 text-blue-400" />
+                  <span className="text-sm font-medium">{item.label}</span>
+                </div>
+
+                <div className="h-8 bg-neutral-800 relative">
+                  <div
+                    className="h-8 bg-emerald-600 rounded flex items-center justify-end pr-3"
+                    style={{ width: `${overallConversion}%` }}
+                  />
+                  <div className="absolute top-2 right-1.5 text-right text-xs">
+                    {overallConversion.toFixed(overallConversion === 100 ? 0 : 2)}%
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </Card>
   );

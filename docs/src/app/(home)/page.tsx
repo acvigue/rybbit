@@ -11,6 +11,16 @@ import { Tilt_Warp } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import { DEFAULT_EVENT_LIMIT } from "../../lib/const";
+import { UserBehaviorTrends } from "../../components/Cards/UserBehaviorTrends";
+import { RealTimeAnalytics } from "../../components/Cards/RealTimeAnalytics";
+import { SessionReplay } from "../../components/Cards/SessionReplay";
+import WebVitals from "../../components/Cards/WebVitals";
+import { UserProfiles } from "../../components/Cards/UserProfiles";
+import { UserSessions } from "../../components/Cards/UserSessions";
+import { UserFlowAnalysis } from "../../components/Cards/UserFlowAnalysis";
+import { EventTracking } from "../../components/Cards/EventTracking";
+import { GoalConversion } from "../../components/Cards/GoalConversion";
+import { Funnels } from "../../components/Cards/Funnels";
 
 const tilt_wrap = Tilt_Warp({
   subsets: ["latin"],
@@ -197,7 +207,7 @@ export default function HomePage() {
           <div className="max-w-6xl mx-auto px-4">
             <div className="text-center mb-10 md:mb-12">
               <p className="text-neutral-400 text-sm uppercase tracking-wider font-medium">
-                Trusted by 2000+ companies worldwide
+                Trusted by 4,000+ organizations worldwide
               </p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-items-center">
@@ -281,28 +291,41 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-
         <section className="py-14 md:py-20 w-full max-w-6xl px-4">
-          <div className="bg-neutral-900/30 backdrop-blur-sm border border-neutral-800/50 rounded-2xl p-4 md:p-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12\0">
-              {features.map(feature => {
-                const Icon = feature.icon;
-                return (
-                  <div key={feature.title} className="space-y-4">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/30 shadow-md shadow-emerald-500/10 flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-emerald-400" />
-                    </div>
-                    <h3 className="text-2xl font-medium tracking-tight">{feature.title}</h3>
-                    <p className="text-neutral-300 text-base">{feature.description}</p>
+          {/* <div className="bg-neutral-900/30 backdrop-blur-sm border border-neutral-800/50 rounded-2xl p-4 md:p-8"> */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-16">
+            {features.map(feature => {
+              const Icon = feature.icon;
+              return (
+                <div key={feature.title} className="space-y-4">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/30 shadow-md shadow-emerald-500/10 flex items-center justify-center">
+                    <Icon className="w-5 h-5 text-emerald-400" />
                   </div>
-                );
-              })}
-            </div>
+                  <h3 className="text-2xl font-medium tracking-tight">{feature.title}</h3>
+                  <p className="text-neutral-300 text-base">{feature.description}</p>
+                </div>
+              );
+            })}
+          </div>
+          {/* </div> */}
+        </section>
+        <section className="py-14 md:py-20 w-full max-w-6xl px-4">
+          <div className="text-center mb-10 md:mb-16">
+            <SectionBadge className="mb-4"> Analytics Reimagined</SectionBadge>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Features</h2>
+            <p className="mt-4 text-base md:text-xl text-neutral-300 max-w-2xl mx-auto font-light">
+              Everything you need to understand your audience and grow your business, without the complexity.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+            <RealTimeAnalytics />
+            <SessionReplay />
+            <UserSessions />
+            <Funnels />
           </div>
         </section>
 
         <Integrations />
-
         {/* Testimonial Section */}
         <section className="py-10 md:py-16 w-full">
           <div className="max-w-7xl mx-auto px-4">
