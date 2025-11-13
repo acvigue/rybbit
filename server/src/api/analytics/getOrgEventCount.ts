@@ -48,7 +48,7 @@ export async function getOrgEventCount(
 
     if (start_date && end_date) {
       timeFilter = `AND event_hour >= toTimeZone(
-        toStartOfDay(toDateTime(${SqlString.escape(start_date)}, ${SqlString.escape(time_zone)}),
+        toStartOfDay(toDateTime(${SqlString.escape(start_date)}, ${SqlString.escape(time_zone)})),
         'UTC'
       )
       AND event_hour < if(
