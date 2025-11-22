@@ -13,7 +13,17 @@ interface SocialButtonsProps {
 }
 
 export function SocialButtons({ onError, callbackURL, mode = "signin", className = "" }: SocialButtonsProps) {
-  const { configs } = useConfigs();
+  const { configs, isLoading } = useConfigs();
+
+  if (isLoading || !configs) {
+    return null;
+  }
+
+  const hasProviders = configs.enabledOIDCProviders.length > 0 || configs.enabledSocialProviders.length > 0;
+
+  if (!hasProviders) {
+    return null;
+  }
 
   const handleOIDCAuth = async (providerId: string) => {
     try {
