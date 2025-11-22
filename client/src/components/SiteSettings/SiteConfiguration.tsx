@@ -26,9 +26,7 @@ import { normalizeDomain } from "@/lib/utils";
 import { IPExclusionManager } from "./IPExclusionManager";
 import { CountryExclusionManager } from "./CountryExclusionManager";
 import { GSCManager } from "./GSCManager";
-import { useStripeSubscription } from "../../lib/subscription/useStripeSubscription";
 import { Badge } from "../ui/badge";
-import { IS_CLOUD } from "../../lib/const";
 
 interface SiteConfigurationProps {
   siteMetadata: SiteResponse;
@@ -179,11 +177,9 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
     },
   ];
 
-  const { data: subscription } = useStripeSubscription();
-
-  const sessionReplayDisabled = !subscription?.isPro && IS_CLOUD;
-  const webVitalsDisabled = subscription?.status !== "active" && IS_CLOUD;
-  const trackErrorsDisabled = subscription?.status !== "active" && IS_CLOUD;
+  const sessionReplayDisabled = false;
+  const webVitalsDisabled = false;
+  const trackErrorsDisabled = false;
 
   // Configuration for analytics feature toggles
   const analyticsToggles: ToggleConfig[] = [
@@ -198,20 +194,20 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
       disabled: sessionReplayDisabled,
       badge: <Badge variant="success">Pro</Badge>,
     },
-    ...(IS_CLOUD
+    ...(true
       ? [
-          {
-            id: "webVitals",
-            label: "Web Vitals",
-            description: "Track Core Web Vitals metrics (LCP, CLS, INP, FCP, TTFB)",
-            value: toggleStates.webVitals,
-            key: "webVitals" as keyof SiteResponse,
-            enabledMessage: "Web Vitals enabled",
-            disabledMessage: "Web Vitals disabled",
-            disabled: webVitalsDisabled,
-            badge: <Badge variant="success">Standard</Badge>,
-          } as ToggleConfig,
-        ]
+        {
+          id: "webVitals",
+          label: "Web Vitals",
+          description: "Track Core Web Vitals metrics (LCP, CLS, INP, FCP, TTFB)",
+          value: toggleStates.webVitals,
+          key: "webVitals" as keyof SiteResponse,
+          enabledMessage: "Web Vitals enabled",
+          disabledMessage: "Web Vitals disabled",
+          disabled: webVitalsDisabled,
+          badge: <Badge variant="success">Standard</Badge>,
+        } as ToggleConfig,
+      ]
       : []),
     {
       id: "trackErrors",
@@ -269,7 +265,7 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
         <div key={toggle.id} className="flex items-center justify-between">
           <div>
             <Label htmlFor={toggle.id} className="text-sm font-medium text-foreground flex items-center gap-2">
-              {toggle.label} {toggle.badge && IS_CLOUD && toggle.badge}
+              {toggle.label} {toggle.badge && true && toggle.badge}
             </Label>
             <p className="text-xs text-muted-foreground mt-1">{toggle.description}</p>
           </div>
@@ -307,7 +303,7 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
       <CountryExclusionManager siteId={siteMetadata.siteId} disabled={disabled} />
 
       {/* Google Search Console Section */}
-      {IS_CLOUD && <GSCManager disabled={disabled} />}
+      <GSCManager disabled={disabled} />
 
       {/* Domain Settings Section */}
       <div className="space-y-3">

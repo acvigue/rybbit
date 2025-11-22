@@ -21,7 +21,6 @@ import { GeneralTab } from "./GeneralTab";
 import { AdvancedTab } from "./AdvancedTab";
 import { RegionsTab } from "./RegionsTab";
 import { NotificationsTab } from "./NotificationsTab";
-import { IS_CLOUD } from "@/lib/const";
 import { useQuery } from "@tanstack/react-query";
 import { authedFetch } from "../../../../../api/utils";
 
@@ -46,57 +45,57 @@ export function MonitorDialog({ monitor, open, onOpenChange }: MonitorDialogProp
       }>("/uptime/regions");
       return response.regions;
     },
-    enabled: open && IS_CLOUD,
+    enabled: open,
   });
 
   const form = useForm<any>({
     resolver: zodResolver(isEdit ? updateMonitorSchema : createMonitorSchema),
     defaultValues: isEdit
       ? {
-          name: monitor.name,
-          intervalSeconds: monitor.intervalSeconds,
-          enabled: monitor.enabled,
-          httpConfig: monitor.httpConfig
-            ? {
-                url: monitor.httpConfig.url,
-                method: monitor.httpConfig.method as any,
-                headers: monitor.httpConfig.headers,
-                body: monitor.httpConfig.body,
-                auth: monitor.httpConfig.auth,
-                followRedirects: monitor.httpConfig.followRedirects ?? true,
-                timeoutMs: monitor.httpConfig.timeoutMs ?? 30000,
-                ipVersion: monitor.httpConfig.ipVersion ?? "any",
-                userAgent: monitor.httpConfig.userAgent,
-              }
-            : undefined,
-          tcpConfig: monitor.tcpConfig
-            ? {
-                host: monitor.tcpConfig.host,
-                port: monitor.tcpConfig.port,
-                timeoutMs: monitor.tcpConfig.timeoutMs ?? 30000,
-              }
-            : undefined,
-          validationRules: monitor.validationRules || [],
-          monitoringType: monitor.monitoringType || "local",
-          selectedRegions: monitor.selectedRegions || ["local"],
-        }
+        name: monitor.name,
+        intervalSeconds: monitor.intervalSeconds,
+        enabled: monitor.enabled,
+        httpConfig: monitor.httpConfig
+          ? {
+            url: monitor.httpConfig.url,
+            method: monitor.httpConfig.method as any,
+            headers: monitor.httpConfig.headers,
+            body: monitor.httpConfig.body,
+            auth: monitor.httpConfig.auth,
+            followRedirects: monitor.httpConfig.followRedirects ?? true,
+            timeoutMs: monitor.httpConfig.timeoutMs ?? 30000,
+            ipVersion: monitor.httpConfig.ipVersion ?? "any",
+            userAgent: monitor.httpConfig.userAgent,
+          }
+          : undefined,
+        tcpConfig: monitor.tcpConfig
+          ? {
+            host: monitor.tcpConfig.host,
+            port: monitor.tcpConfig.port,
+            timeoutMs: monitor.tcpConfig.timeoutMs ?? 30000,
+          }
+          : undefined,
+        validationRules: monitor.validationRules || [],
+        monitoringType: monitor.monitoringType || "local",
+        selectedRegions: monitor.selectedRegions || ["local"],
+      }
       : {
-          organizationId: activeOrganization?.id || "",
-          name: "", // Optional - will be empty by default
-          monitorType: "http" as const,
-          intervalSeconds: 180,
-          enabled: true,
-          httpConfig: {
-            url: "",
-            method: "GET" as const,
-            followRedirects: true,
-            timeoutMs: 30000,
-            ipVersion: "any" as const,
-          },
-          validationRules: [],
-          monitoringType: IS_CLOUD ? "global" : "local",
-          selectedRegions: IS_CLOUD ? [] : ["local"], // Empty array for cloud, will be populated in RegionsTab
+        organizationId: activeOrganization?.id || "",
+        name: "", // Optional - will be empty by default
+        monitorType: "http" as const,
+        intervalSeconds: 180,
+        enabled: true,
+        httpConfig: {
+          url: "",
+          method: "GET" as const,
+          followRedirects: true,
+          timeoutMs: 30000,
+          ipVersion: "any" as const,
         },
+        validationRules: [],
+        monitoringType: "global",
+        selectedRegions: []
+      },
   });
 
   const monitorType = isEdit ? monitor.monitorType : form.watch("monitorType");
@@ -130,7 +129,7 @@ export function MonitorDialog({ monitor, open, onOpenChange }: MonitorDialogProp
 
   // Initialize regions for new monitors in cloud mode
   useEffect(() => {
-    if (open && !isEdit && IS_CLOUD && regionsData) {
+    if (open && !isEdit && regionsData) {
       const globalRegions = regionsData.filter(r => !r.isLocal && r.isHealthy);
       if (globalRegions.length > 0) {
         const currentRegions = form.getValues("selectedRegions");
@@ -147,7 +146,7 @@ export function MonitorDialog({ monitor, open, onOpenChange }: MonitorDialogProp
         }
       }
     }
-  }, [open, isEdit, IS_CLOUD, regionsData, form]);
+  }, [open, isEdit, regionsData, form]);
 
   // Reset form when dialog closes or monitor changes
   useEffect(() => {
@@ -160,23 +159,23 @@ export function MonitorDialog({ monitor, open, onOpenChange }: MonitorDialogProp
         enabled: monitor.enabled,
         httpConfig: monitor.httpConfig
           ? {
-              url: monitor.httpConfig.url,
-              method: monitor.httpConfig.method as any,
-              headers: monitor.httpConfig.headers,
-              body: monitor.httpConfig.body,
-              auth: monitor.httpConfig.auth,
-              followRedirects: monitor.httpConfig.followRedirects ?? true,
-              timeoutMs: monitor.httpConfig.timeoutMs ?? 30000,
-              ipVersion: monitor.httpConfig.ipVersion ?? "any",
-              userAgent: monitor.httpConfig.userAgent,
-            }
+            url: monitor.httpConfig.url,
+            method: monitor.httpConfig.method as any,
+            headers: monitor.httpConfig.headers,
+            body: monitor.httpConfig.body,
+            auth: monitor.httpConfig.auth,
+            followRedirects: monitor.httpConfig.followRedirects ?? true,
+            timeoutMs: monitor.httpConfig.timeoutMs ?? 30000,
+            ipVersion: monitor.httpConfig.ipVersion ?? "any",
+            userAgent: monitor.httpConfig.userAgent,
+          }
           : undefined,
         tcpConfig: monitor.tcpConfig
           ? {
-              host: monitor.tcpConfig.host,
-              port: monitor.tcpConfig.port,
-              timeoutMs: monitor.tcpConfig.timeoutMs ?? 30000,
-            }
+            host: monitor.tcpConfig.host,
+            port: monitor.tcpConfig.port,
+            timeoutMs: monitor.tcpConfig.timeoutMs ?? 30000,
+          }
           : undefined,
         validationRules: monitor.validationRules || [],
         monitoringType: monitor.monitoringType || "local",

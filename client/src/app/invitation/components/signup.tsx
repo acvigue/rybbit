@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { authClient } from "../../../lib/auth";
 import { userStore } from "../../../lib/userStore";
-import { IS_CLOUD } from "../../../lib/const";
 import { AuthInput } from "@/components/auth/AuthInput";
 import { AuthButton } from "@/components/auth/AuthButton";
 import { AuthError } from "@/components/auth/AuthError";
@@ -28,13 +27,6 @@ export function Signup({ inviterEmail, organization }: SignupProps) {
     setError("");
 
     try {
-      // Validate Turnstile token if in cloud mode
-      if (IS_CLOUD && !turnstileToken) {
-        setError("Please complete the captcha verification");
-        setIsLoading(false);
-        return;
-      }
-
       const { data, error } = await authClient.signUp.email(
         {
           email,
@@ -43,7 +35,7 @@ export function Signup({ inviterEmail, organization }: SignupProps) {
         },
         {
           onRequest: context => {
-            if (IS_CLOUD && turnstileToken) {
+            if (turnstileToken) {
               context.headers.set("x-captcha-response", turnstileToken);
             }
           },
@@ -91,19 +83,10 @@ export function Signup({ inviterEmail, organization }: SignupProps) {
           onChange={e => setPassword(e.target.value)}
         />
 
-        {IS_CLOUD && (
-          <Turnstile
-            onSuccess={token => setTurnstileToken(token)}
-            onError={() => setTurnstileToken("")}
-            onExpire={() => setTurnstileToken("")}
-            className="flex justify-center"
-          />
-        )}
-
         <AuthButton
           isLoading={isLoading}
           loadingText="Creating account..."
-          disabled={IS_CLOUD ? !turnstileToken || isLoading : isLoading}
+          disabled={isLoading}
         >
           Sign Up to Accept Invitation
         </AuthButton>

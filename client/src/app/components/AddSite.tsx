@@ -20,28 +20,8 @@ import { Switch } from "../../components/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../components/ui/tooltip";
 import { authClient } from "../../lib/auth";
 import { resetStore, useStore } from "../../lib/store";
-import { SubscriptionData, useStripeSubscription } from "../../lib/subscription/useStripeSubscription";
 import { isValidDomain, normalizeDomain } from "../../lib/utils";
-import { FREE_SITE_LIMIT, IS_CLOUD, PRO_SITE_LIMIT, STANDARD_SITE_LIMIT } from "../../lib/const";
-
-const getSiteLimit = (subscription: SubscriptionData | undefined) => {
-  if (subscription?.planName.includes("standard")) {
-    return STANDARD_SITE_LIMIT;
-  }
-  if (subscription?.planName.includes("pro")) {
-    return PRO_SITE_LIMIT;
-  }
-  if (subscription?.planName === "appsumo-1") {
-    return 3;
-  }
-  if (subscription?.planName === "appsumo-2") {
-    return 10;
-  }
-  if (subscription?.planName === "appsumo-3") {
-    return 25;
-  }
-  return FREE_SITE_LIMIT;
-};
+import { FREE_SITE_LIMIT, PRO_SITE_LIMIT, STANDARD_SITE_LIMIT } from "../../lib/const";
 
 export function AddSite({ trigger, disabled }: { trigger?: React.ReactNode; disabled?: boolean }) {
   const { setSite } = useStore();
@@ -49,9 +29,8 @@ export function AddSite({ trigger, disabled }: { trigger?: React.ReactNode; disa
 
   const { data: activeOrganization } = authClient.useActiveOrganization();
   const { data: sites, refetch } = useGetSitesFromOrg(activeOrganization?.id);
-  const { data: subscription } = useStripeSubscription();
 
-  const isOverSiteLimit = getSiteLimit(subscription) <= (sites?.sites?.length || 0) && IS_CLOUD;
+  const isOverSiteLimit = false;
 
   const finalDisabled = disabled || isOverSiteLimit;
 
@@ -100,26 +79,6 @@ export function AddSite({ trigger, disabled }: { trigger?: React.ReactNode; disa
     setIsPublic(false);
     setSaltUserIds(false);
   };
-
-  // Show upgrade message if disabled due to limit
-  if (isOverSiteLimit) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span>
-            <Button disabled title="Upgrade to Pro to add more websites">
-              <Plus className="h-4 w-4" />
-              Add Website
-            </Button>
-          </span>
-        </TooltipTrigger>
-        <TooltipContent>
-          You have reached the limit of {subscription?.isPro ? STANDARD_SITE_LIMIT : FREE_SITE_LIMIT} websites. Upgrade
-          to add more websites
-        </TooltipContent>
-      </Tooltip>
-    );
-  }
 
   return (
     <div>

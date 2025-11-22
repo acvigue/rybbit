@@ -11,7 +11,6 @@ import { useState } from "react";
 import { RybbitLogo } from "../../components/RybbitLogo";
 import { useSetPageTitle } from "../../hooks/useSetPageTitle";
 import { authClient } from "../../lib/auth";
-import { IS_CLOUD } from "../../lib/const";
 
 export default function ResetPasswordPage() {
   useSetPageTitle("Rybbit · Reset Password");
@@ -30,25 +29,11 @@ export default function ResetPasswordPage() {
     setIsLoading(true);
     setError("");
 
-    // Validate Turnstile token if in cloud mode and production
-    if (IS_CLOUD && process.env.NODE_ENV === "production" && !turnstileToken) {
-      setError("Please complete the captcha verification");
-      setIsLoading(false);
-      return;
-    }
-
     try {
       const { data, error } = await authClient.emailOtp.sendVerificationOtp(
         {
           email,
           type: "forget-password",
-        },
-        {
-          onRequest: context => {
-            if (IS_CLOUD && process.env.NODE_ENV === "production" && turnstileToken) {
-              context.headers.set("x-captcha-response", turnstileToken);
-            }
-          },
         }
       );
 
@@ -181,19 +166,10 @@ export default function ResetPasswordPage() {
                 onChange={e => setEmail(e.target.value)}
               />
 
-              {IS_CLOUD && process.env.NODE_ENV === "production" && (
-                <Turnstile
-                  onSuccess={token => setTurnstileToken(token)}
-                  onError={() => setTurnstileToken("")}
-                  onExpire={() => setTurnstileToken("")}
-                  className="flex justify-center"
-                />
-              )}
-
               <AuthButton
                 isLoading={isLoading}
                 loadingText="Sending code..."
-                disabled={IS_CLOUD && process.env.NODE_ENV === "production" ? !turnstileToken || isLoading : isLoading}
+                disabled={isLoading}
               >
                 Send Verification Code
               </AuthButton>

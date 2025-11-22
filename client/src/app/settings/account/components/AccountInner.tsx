@@ -13,7 +13,6 @@ import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { Switch } from "../../../../components/ui/switch";
 import { useUpdateAccountSettings } from "../../../../api/admin/accountSettings";
-import { IS_CLOUD } from "../../../../lib/const";
 import { ApiKeyManager } from "./ApiKeyManager";
 
 export function AccountInner() {
@@ -143,7 +142,7 @@ export function AccountInner() {
               </Button>
             </div>
           </div>
-          {(session.data?.user as any)?.sendAutoEmailReports !== undefined && IS_CLOUD && (
+          {(session.data?.user as any)?.sendAutoEmailReports !== undefined && (
             <div className="flex items-center justify-between">
               <div className="space-y-2">
                 <h4 className="text-sm font-medium">Send Weekly Email Reports</h4>
@@ -195,7 +194,7 @@ export function AccountInner() {
         </CardContent>
       </Card>
 
-      {IS_CLOUD && <ApiKeyManager />}
+      <ApiKeyManager />
     </div>
   );
 }

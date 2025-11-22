@@ -19,7 +19,6 @@ import { RybbitLogo, RybbitTextLogo } from "../../components/RybbitLogo";
 import { useSetPageTitle } from "../../hooks/useSetPageTitle";
 import { authClient } from "../../lib/auth";
 import { useConfigs } from "../../lib/configs";
-import { IS_CLOUD } from "../../lib/const";
 import { userStore } from "../../lib/userStore";
 import { cn, isValidDomain, normalizeDomain } from "../../lib/utils";
 
@@ -83,26 +82,12 @@ export default function SignupPage() {
     setError("");
 
     try {
-      // Validate Turnstile token if in cloud mode
-      if (IS_CLOUD && !turnstileToken) {
-        setError("Please complete the captcha verification");
-        setIsLoading(false);
-        return;
-      }
-
       const { data, error } = await authClient.signUp.email(
         {
           email,
           name: email.split("@")[0], // Use email prefix as default name
           password,
         },
-        {
-          onRequest: context => {
-            if (IS_CLOUD && turnstileToken) {
-              context.headers.set("x-captcha-response", turnstileToken);
-            }
-          },
-        }
       );
 
       if (data?.user) {
@@ -214,35 +199,24 @@ export default function SignupPage() {
                 onChange={e => setPassword(e.target.value)}
               />
 
-              {IS_CLOUD && (
-                <Turnstile
-                  onSuccess={token => setTurnstileToken(token)}
-                  onError={() => setTurnstileToken("")}
-                  onExpire={() => setTurnstileToken("")}
-                  className="flex justify-center"
-                />
-              )}
-
               <AuthButton
                 isLoading={isLoading}
                 loadingText="Creating account..."
                 onClick={handleAccountSubmit}
                 type="button"
                 className="mt-6 transition-all duration-300 h-11"
-                disabled={IS_CLOUD ? !turnstileToken || isLoading : isLoading}
+                disabled={isLoading}
               >
                 Continue
                 <ArrowRight className="ml-2 h-4 w-4" />
               </AuthButton>
 
-              {IS_CLOUD && (
-                <SocialButtons
-                  onError={setError}
-                  callbackURL="/signup?step=2"
-                  mode="signup"
-                  className="grid grid-cols-2 gap-2"
-                />
-              )}
+              <SocialButtons
+                onError={setError}
+                callbackURL="/signup?step=2"
+                mode="signup"
+                className="grid grid-cols-2 gap-2"
+              />
 
               <div className="text-center text-sm">
                 Already have an account?{" "}
@@ -437,19 +411,6 @@ export default function SignupPage() {
             <AuthError error={error} />
           </div>
         </Card>
-
-        {!IS_CLOUD && (
-          <div className="text-xs text-muted-foreground relative z-10 mt-8">
-            <a
-              href="https://rybbit.com"
-              target="_blank"
-              rel="noopener"
-              title="Rybbit - Open Source Privacy-Focused Web Analytics"
-            >
-              Open source web analytics powered by Rybbit
-            </a>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -17,7 +17,6 @@ import React, { Suspense, useEffect, useState } from "react";
 import { addSite } from "../../../api/admin/sites";
 import { useSetPageTitle } from "../../../hooks/useSetPageTitle";
 import { authClient } from "../../../lib/auth";
-import { IS_CLOUD } from "../../../lib/const";
 import { userStore } from "../../../lib/userStore";
 import { cn, isValidDomain, normalizeDomain } from "../../../lib/utils";
 import { RybbitTextLogo } from "../../../components/RybbitLogo";
@@ -94,13 +93,6 @@ export default function AppSumoSignupPage() {
     setError("");
 
     try {
-      // Validate Turnstile token if in cloud mode
-      if (IS_CLOUD && !turnstileToken) {
-        setError("Please complete the captcha verification");
-        setIsLoading(false);
-        return;
-      }
-
       const { data, error } = await authClient.signUp.email(
         {
           email,
@@ -109,7 +101,7 @@ export default function AppSumoSignupPage() {
         },
         {
           onRequest: context => {
-            if (IS_CLOUD && turnstileToken) {
+            if (turnstileToken) {
               context.headers.set("x-captcha-response", turnstileToken);
             }
           },
@@ -261,22 +253,13 @@ export default function AppSumoSignupPage() {
                 onChange={e => setPassword(e.target.value)}
               />
 
-              {IS_CLOUD && (
-                <Turnstile
-                  onSuccess={token => setTurnstileToken(token)}
-                  onError={() => setTurnstileToken("")}
-                  onExpire={() => setTurnstileToken("")}
-                  className="flex justify-center"
-                />
-              )}
-
               <AuthButton
                 isLoading={isLoading}
                 loadingText="Creating account..."
                 onClick={handleAccountSubmit}
                 type="button"
                 className="mt-6 transition-all duration-300 h-11"
-                disabled={IS_CLOUD ? !turnstileToken || isLoading : isLoading}
+                disabled={isLoading}
               >
                 Continue
                 <ArrowRight className="ml-2 h-4 w-4" />

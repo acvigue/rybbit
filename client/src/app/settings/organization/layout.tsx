@@ -1,13 +1,12 @@
 "use client";
 
-import { CreditCard, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { CreateOrganizationDialog } from "../../../components/CreateOrganizationDialog";
 import { OrganizationSelector } from "../../../components/OrganizationSelector";
 import { Button } from "../../../components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "../../../components/ui/tabs";
-import { IS_CLOUD } from "../../../lib/const";
 
 export default function OrganizationLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -48,12 +47,6 @@ export default function OrganizationLayout({ children }: { children: React.React
               <Users size={16} />
               Organization
             </TabsTrigger>
-            {IS_CLOUD && (
-              <TabsTrigger value="subscription" className="flex items-center gap-2">
-                <CreditCard size={16} />
-                Subscription
-              </TabsTrigger>
-            )}
           </TabsList>
         </Tabs>
 

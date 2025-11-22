@@ -13,7 +13,6 @@ import { RybbitLogo } from "../../components/RybbitLogo";
 import { useSetPageTitle } from "../../hooks/useSetPageTitle";
 import { authClient } from "../../lib/auth";
 import { useConfigs } from "../../lib/configs";
-import { IS_CLOUD } from "../../lib/const";
 import { userStore } from "../../lib/userStore";
 
 export default function Page() {
@@ -32,25 +31,11 @@ export default function Page() {
 
     setError("");
 
-    // Validate Turnstile token if in cloud mode and production
-    if (IS_CLOUD && process.env.NODE_ENV === "production" && !turnstileToken) {
-      setError("Please complete the captcha verification");
-      setIsLoading(false);
-      return;
-    }
-
     try {
       const { data, error } = await authClient.signIn.email(
         {
           email,
           password,
-        },
-        {
-          onRequest: context => {
-            if (IS_CLOUD && process.env.NODE_ENV === "production" && turnstileToken) {
-              context.headers.set("x-captcha-response", turnstileToken);
-            }
-          },
         }
       );
       if (data?.user) {
@@ -68,8 +53,6 @@ export default function Page() {
     }
     setIsLoading(false);
   };
-
-  const turnstileEnabled = IS_CLOUD && process.env.NODE_ENV === "production";
 
   return (
     <div className="flex flex-col justify-between items-center h-dvh w-full p-4">
@@ -107,19 +90,10 @@ export default function Page() {
                 }
               />
 
-              {turnstileEnabled && (
-                <Turnstile
-                  onSuccess={token => setTurnstileToken(token)}
-                  onError={() => setTurnstileToken("")}
-                  onExpire={() => setTurnstileToken("")}
-                  className="flex justify-center"
-                />
-              )}
-
               <AuthButton
                 isLoading={isLoading}
                 loadingText="Logging in..."
-                disabled={turnstileEnabled ? !turnstileToken || isLoading : isLoading}
+                disabled={isLoading}
               >
                 Login
               </AuthButton>

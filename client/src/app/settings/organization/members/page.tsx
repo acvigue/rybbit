@@ -12,7 +12,6 @@ import { NoOrganization } from "../../../../components/NoOrganization";
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
 import { useSetPageTitle } from "../../../../hooks/useSetPageTitle";
-import { IS_CLOUD } from "../../../../lib/const";
 import { CreateUserDialog } from "./components/CreateUserDialog";
 import { Invitations } from "./components/Invitations";
 import { InviteMemberDialog } from "./components/InviteMemberDialog";
@@ -128,17 +127,11 @@ function Organization({
 
             <div className="flex items-center gap-2">
               {isOwner && (
-                <>
-                  {IS_CLOUD ? (
-                    <InviteMemberDialog
-                      organizationId={org.id}
-                      onSuccess={handleRefresh}
-                      memberCount={members?.data?.length || 0}
-                    />
-                  ) : (
-                    <CreateUserDialog organizationId={org.id} onSuccess={handleRefresh} />
-                  )}
-                </>
+                <InviteMemberDialog
+                  organizationId={org.id}
+                  onSuccess={handleRefresh}
+                  memberCount={members?.data?.length || 0}
+                />
               )}
             </div>
           </div>

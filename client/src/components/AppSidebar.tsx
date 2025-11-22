@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { Suspense, useState } from "react";
 import { useEmbedablePage } from "../app/[site]/utils";
 import { useAdminPermission } from "../app/admin/hooks/useAdminPermission";
-import { IS_CLOUD } from "../lib/const";
 import { cn } from "../lib/utils";
 import { RybbitLogo } from "./RybbitLogo";
 import { ThemeSwitcher } from "./ThemeSwitcher";
@@ -46,15 +45,6 @@ function AppSidebarContent() {
           active={pathname.startsWith("/uptime")}
           expanded={isExpanded}
         /> */}
-        {isAdmin && IS_CLOUD && (
-          <SidebarLink
-            href="/admin"
-            icon={<ShieldUser className="w-5 h-5" />}
-            label="Admin"
-            active={pathname.startsWith("/admin")}
-            expanded={isExpanded}
-          />
-        )}
       </div>
       <div className="flex flex-col items-start gap-2 w-full">
         <div className={cn("flex items-center w-full px-0.5", isExpanded ? "justify-start" : "hidden")}>

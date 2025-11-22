@@ -2,10 +2,9 @@ import { ArrowRight, Crown, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import React, { ReactNode, useMemo, useRef, useEffect, useState } from "react";
 import { useCurrentSite } from "../api/admin/sites";
-import { DEFAULT_EVENT_LIMIT } from "../lib/subscription/constants";
 import { Button } from "./ui/button";
 import { authClient } from "../lib/auth";
-import { DEMO_HOSTNAME, IS_CLOUD } from "../lib/const";
+import { DEMO_HOSTNAME } from "../lib/const";
 import { DateTime } from "luxon";
 
 interface DisabledOverlayProps {
@@ -98,18 +97,7 @@ export const DisabledOverlay: React.FC<DisabledOverlayProps> = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const [overlayRemoved, setOverlayRemoved] = useState(false);
 
-  const disabled = useMemo(() => {
-    if (!IS_CLOUD) {
-      return false;
-    }
-    if (requiredPlan === "pro") {
-      if (organization?.createdAt && DateTime.fromJSDate(organization?.createdAt) < DateTime.fromISO("2025-09-19")) {
-        return false;
-      }
-      return !subscription?.isPro;
-    }
-    return subscription?.eventLimit === DEFAULT_EVENT_LIMIT;
-  }, [subscription, requiredPlan, organization]);
+  const disabled = false;
 
   // MutationObserver to detect and restore overlay if removed or modified
   useEffect(() => {
