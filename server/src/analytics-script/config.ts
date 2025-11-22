@@ -12,7 +12,7 @@ export async function parseScriptConfig(scriptTag: HTMLScriptElement): Promise<S
     return null;
   }
 
-  let analyticsHost = scriptTag.getAttribute("data-analytics-host");
+  let analyticsHost = scriptTag.getAttribute("data-proxy");
   if (!analyticsHost) {
     analyticsHost = src.split("/script.js")[0];
     if (!analyticsHost) {
