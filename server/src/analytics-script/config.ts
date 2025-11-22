@@ -12,10 +12,13 @@ export async function parseScriptConfig(scriptTag: HTMLScriptElement): Promise<S
     return null;
   }
 
-  const analyticsHost = src.split("/script.js")[0];
+  let analyticsHost = scriptTag.getAttribute("data-analytics-host");
   if (!analyticsHost) {
-    console.error("Please provide a valid analytics host");
-    return null;
+    analyticsHost = src.split("/script.js")[0];
+    if (!analyticsHost) {
+      console.error("Could not determine analytics host from script src");
+      return null;
+    }
   }
 
   const siteId = scriptTag.getAttribute("data-site-id") || scriptTag.getAttribute("site-id");

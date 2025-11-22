@@ -1,7 +1,6 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { FreePlanBanner } from "../../../../components/FreePlanBanner";
 import { userStore } from "../../../../lib/userStore";
 import { DemoSignupBanner } from "./DemoSignupBanner";
 import { NoData } from "./NoData";
@@ -16,7 +15,6 @@ export function Header() {
       {user && !pathname.includes("/globe") && (
         <div className="flex flex-col px-2 md:px-4">
           <DemoSignupBanner />
-          <FreePlanBanner />
           <UsageBanners />
           <NoData />
         </div>
