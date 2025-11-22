@@ -7,14 +7,13 @@ import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { processResults } from "../../api/analytics/utils.js";
 import { createServiceLogger } from "../../lib/logger/logger.js";
 import { sendWeeklyReportEmail } from "../../lib/email/email.js";
-import { IS_CLOUD } from "../../lib/const.js";
 import type { OverviewData, MetricData, SiteReport, OrganizationReport } from "./weeklyReportTypes.js";
 
 class WeeklyReportService {
   private cronTask: cron.ScheduledTask | null = null;
   private logger = createServiceLogger("weekly-report");
 
-  constructor() {}
+  constructor() { }
 
   private async fetchOverviewData(siteId: number, startDate: string, endDate: string): Promise<OverviewData | null> {
     try {
@@ -371,11 +370,6 @@ class WeeklyReportService {
   }
 
   public async generateAndSendReports(): Promise<void> {
-    if (!IS_CLOUD) {
-      this.logger.info("Skipping weekly reports for non-cloud instance");
-      return;
-    }
-
     this.logger.info("Starting weekly report generation and sending");
 
     try {
@@ -421,11 +415,6 @@ class WeeklyReportService {
   }
 
   private initializeWeeklyReportCron(): void {
-    if (!IS_CLOUD) {
-      this.logger.info("Skipping weekly report cron initialization for non-cloud instance");
-      return;
-    }
-
     this.logger.info("Initializing weekly report cron");
 
     // Schedule weekly reports to run every Monday at midnight UTC

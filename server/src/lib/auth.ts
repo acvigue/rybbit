@@ -7,7 +7,7 @@ import pg from "pg";
 import { db } from "../db/postgres/postgres.js";
 import * as schema from "../db/postgres/schema.js";
 import { user } from "../db/postgres/schema.js";
-import { DISABLE_SIGNUP, INTERNAL_AUTHENTICATION_ENABLED, IS_CLOUD, getOIDCProviders, getSocialProviders } from "./const.js";
+import { DISABLE_SIGNUP, INTERNAL_AUTHENTICATION_ENABLED, getOIDCProviders, getSocialProviders } from "./const.js";
 import { sendEmail, sendInvitationEmail } from "./email/email.js";
 
 dotenv.config();
@@ -91,7 +91,7 @@ const pluginList = [
       },
     })] : []),
   // Add Cloudflare Turnstile captcha (cloud only)
-  ...(IS_CLOUD && process.env.TURNSTILE_SECRET_KEY && process.env.NODE_ENV === "production"
+  ...(process.env.TURNSTILE_SECRET_KEY && process.env.NODE_ENV === "production"
     ? [
       captcha({
         provider: "cloudflare-turnstile",

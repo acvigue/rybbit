@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-export const IS_CLOUD = process.env.CLOUD === "true";
 export const DISABLE_SIGNUP = process.env.DISABLE_SIGNUP === "true";
 export const DISABLE_TELEMETRY = process.env.DISABLE_TELEMETRY === "true";
 export const INTERNAL_AUTHENTICATION_ENABLED = process.env.INTERNAL_AUTHENTICATION_ENABLED !== "false";

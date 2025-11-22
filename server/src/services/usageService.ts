@@ -5,7 +5,7 @@ import { processResults } from "../api/analytics/utils.js";
 import { clickhouse } from "../db/clickhouse/clickhouse.js";
 import { db } from "../db/postgres/postgres.js";
 import { member, organization, sites, user } from "../db/postgres/schema.js";
-import { DEFAULT_EVENT_LIMIT, IS_CLOUD } from "../lib/const.js";
+import { DEFAULT_EVENT_LIMIT } from "../lib/const.js";
 import { sendLimitExceededEmail } from "../lib/email/email.js";
 import { createServiceLogger } from "../lib/logger/logger.js";
 import { getBestSubscription } from "../lib/subscriptionUtils.js";
@@ -23,7 +23,7 @@ class UsageService {
    * Initialize the cron job for checking monthly usage
    */
   private initializeUsageCheckCron() {
-    if (IS_CLOUD && process.env.NODE_ENV !== "development") {
+    if (process.env.NODE_ENV !== "development") {
       // Schedule the monthly usage checker to run every 30 minutes
       this.usageCheckTask = cron.schedule(
         "*/30 * * * *",

@@ -4,7 +4,7 @@ import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 import { clickhouse } from "../db/clickhouse/clickhouse.js";
-import { IS_CLOUD, DISABLE_TELEMETRY, SECRET } from "../lib/const.js";
+import { DISABLE_TELEMETRY, SECRET } from "../lib/const.js";
 import { processResults } from "../api/analytics/utils.js";
 import { createServiceLogger } from "../lib/logger/logger.js";
 
@@ -15,11 +15,11 @@ class TelemetryService {
   private telemetryTask: cron.ScheduledTask | null = null;
   private logger = createServiceLogger("telemetry");
 
-  constructor() {}
+  constructor() { }
 
   private initializeTelemetryCron() {
     // Only initialize if not cloud and telemetry is not disabled
-    if (!IS_CLOUD && !DISABLE_TELEMETRY) {
+    if (!DISABLE_TELEMETRY) {
       this.logger.info("Initializing telemetry cron");
       // Schedule telemetry to run every 24 hours at midnight
       this.telemetryTask = cron.schedule(
@@ -124,7 +124,7 @@ class TelemetryService {
   // Main telemetry collection function
   public async collectAndSendTelemetry() {
     // Skip if in cloud environment or telemetry is disabled
-    if (IS_CLOUD || DISABLE_TELEMETRY) {
+    if (DISABLE_TELEMETRY) {
       return;
     }
 

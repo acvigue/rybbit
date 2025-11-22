@@ -1,5 +1,4 @@
 import { createClient } from "@clickhouse/client";
-import { IS_CLOUD } from "../../lib/const.js";
 
 export const clickhouse = createClient({
   url: process.env.CLICKHOUSE_HOST,
@@ -62,9 +61,8 @@ export const initializeClickhouse = async () => {
     `,
   });
 
-  if (IS_CLOUD) {
-    await clickhouse.exec({
-      query: `
+  await clickhouse.exec({
+    query: `
         ALTER TABLE events
           ADD COLUMN IF NOT EXISTS company String DEFAULT '',
           ADD COLUMN IF NOT EXISTS company_domain String DEFAULT '',
@@ -84,8 +82,7 @@ export const initializeClickhouse = async () => {
           ADD COLUMN IF NOT EXISTS is_tor Nullable(Boolean),
           ADD COLUMN IF NOT EXISTS is_satellite Nullable(Boolean)
       `,
-    });
-  }
+  });
 
   // Create session replay tables
   await clickhouse.exec({
@@ -205,9 +202,8 @@ export const initializeClickhouse = async () => {
     `,
   });
 
-  if (IS_CLOUD) {
-    await clickhouse.exec({
-      query: `
+  await clickhouse.exec({
+    query: `
         CREATE TABLE IF NOT EXISTS hourly_events_by_site_mv_target (
           event_hour DateTime,          -- The specific hour
           site_id UInt16,
@@ -218,12 +214,12 @@ export const initializeClickhouse = async () => {
         ORDER BY (event_hour, site_id)
         TTL event_hour + INTERVAL 60 DAY
       `,
-    });
+  });
 
-    // 2. Create the Materialized View
-    // This MV will populate the 'hourly_events_by_site_mv_target' table.
-    await clickhouse.exec({
-      query: `
+  // 2. Create the Materialized View
+  // This MV will populate the 'hourly_events_by_site_mv_target' table.
+  await clickhouse.exec({
+    query: `
         CREATE MATERIALIZED VIEW IF NOT EXISTS hourly_events_by_site_mv
         TO hourly_events_by_site_mv_target -- Name of the target table
         AS SELECT
@@ -233,6 +229,5 @@ export const initializeClickhouse = async () => {
         FROM events
         GROUP BY event_hour, site_id
       `,
-    });
-  }
+  });
 };

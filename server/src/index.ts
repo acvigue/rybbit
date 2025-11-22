@@ -4,10 +4,6 @@ import { toNodeHandler } from "better-auth/node";
 import Fastify from "fastify";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { collectTelemetry } from "./api/admin/collectTelemetry.js";
-import { getAdminOrganizations } from "./api/admin/getAdminOrganizations.js";
-import { getAdminServiceEventCount } from "./api/admin/getAdminServiceEventCount.js";
-import { getAdminSites } from "./api/admin/getAdminSites.js";
 import { getEventNames } from "./api/analytics/events/getEventNames.js";
 import { getEventProperties } from "./api/analytics/events/getEventProperties.js";
 import { getEvents } from "./api/analytics/events/getEvents.js";
@@ -57,12 +53,6 @@ import { getSiteExcludedCountries } from "./api/sites/getSiteExcludedCountries.j
 import { getSiteHasData } from "./api/sites/getSiteHasData.js";
 import { getSiteIsPublic } from "./api/sites/getSiteIsPublic.js";
 import { getSitesFromOrg } from "./api/sites/getSitesFromOrg.js";
-import { createCheckoutSession } from "./api/stripe/createCheckoutSession.js";
-import { createPortalSession } from "./api/stripe/createPortalSession.js";
-import { getSubscription } from "./api/stripe/getSubscription.js";
-import { previewSubscriptionUpdate } from "./api/stripe/previewSubscriptionUpdate.js";
-import { updateSubscription } from "./api/stripe/updateSubscription.js";
-import { handleWebhook } from "./api/stripe/webhook.js";
 import { addUserToOrganization } from "./api/user/addUserToOrganization.js";
 import { getUserOrganizations } from "./api/user/getUserOrganizations.js";
 import { listOrganizationMembers } from "./api/user/listOrganizationMembers.js";
@@ -74,7 +64,6 @@ import { initializeClickhouse } from "./db/clickhouse/clickhouse.js";
 import { initPostgres } from "./db/postgres/initPostgres.js";
 import { getSessionFromReq, getUserHasAccessToSitePublic, mapHeaders } from "./lib/auth-utils.js";
 import { auth } from "./lib/auth.js";
-import { IS_CLOUD } from "./lib/const.js";
 import { siteConfig } from "./lib/siteConfig.js";
 import { trackEvent } from "./services/tracker/trackEvent.js";
 // need to import telemetry service here to start it
@@ -100,42 +89,42 @@ const server = Fastify({
   logger: {
     level: process.env.LOG_LEVEL || (process.env.NODE_ENV === "development" ? "debug" : "info"),
     transport:
-      process.env.NODE_ENV === "production" && IS_CLOUD && hasAxiom
+      process.env.NODE_ENV === "production" && hasAxiom
         ? {
-            targets: [
-              // Send to Axiom
-              {
-                target: "@axiomhq/pino",
-                level: process.env.LOG_LEVEL || "info",
-                options: {
-                  dataset: process.env.AXIOM_DATASET,
-                  token: process.env.AXIOM_TOKEN,
-                },
+          targets: [
+            // Send to Axiom
+            {
+              target: "@axiomhq/pino",
+              level: process.env.LOG_LEVEL || "info",
+              options: {
+                dataset: process.env.AXIOM_DATASET,
+                token: process.env.AXIOM_TOKEN,
               },
-              // Pretty print to stdout for Docker logs
-              {
-                target: "pino-pretty",
-                level: process.env.LOG_LEVEL || "info",
-                options: {
-                  colorize: true,
-                  singleLine: true,
-                  translateTime: "HH:MM:ss",
-                  ignore: "pid,hostname,name",
-                  destination: 1, // stdout
-                },
-              },
-            ],
-          }
-        : process.env.NODE_ENV === "development"
-          ? {
+            },
+            // Pretty print to stdout for Docker logs
+            {
               target: "pino-pretty",
+              level: process.env.LOG_LEVEL || "info",
               options: {
                 colorize: true,
                 singleLine: true,
                 translateTime: "HH:MM:ss",
                 ignore: "pid,hostname,name",
+                destination: 1, // stdout
               },
-            }
+            },
+          ],
+        }
+        : process.env.NODE_ENV === "development"
+          ? {
+            target: "pino-pretty",
+            options: {
+              colorize: true,
+              singleLine: true,
+              translateTime: "HH:MM:ss",
+              ignore: "pid,hostname,name",
+            },
+          }
           : undefined, // Production without Axiom - plain JSON to stdout
     serializers: {
       req(request) {
@@ -212,8 +201,6 @@ const PUBLIC_ROUTES: string[] = [
   "/api/auth/callback/google",
   "/api/auth/callback/github",
   "/api/gsc/callback",
-  "/api/stripe/webhook",
-  "/api/as/webhook",
   "/api/session-replay/record",
   "/api/admin/telemetry",
   "/api/site/:siteId/tracking-config",
@@ -421,31 +408,6 @@ server.get("/api/gsc/data/:site", getGSCData);
 //   server.register(notificationRoutes);
 // }
 
-// STRIPE & ADMIN
-
-if (IS_CLOUD) {
-  // Stripe Routes
-  server.post("/api/stripe/create-checkout-session", createCheckoutSession);
-  server.post("/api/stripe/create-portal-session", createPortalSession);
-  server.post("/api/stripe/preview-subscription-update", previewSubscriptionUpdate);
-  server.post("/api/stripe/update-subscription", updateSubscription);
-  server.get("/api/stripe/subscription", getSubscription);
-  server.post("/api/stripe/webhook", { config: { rawBody: true } }, handleWebhook); // Use rawBody parser config for webhook
-
-  // Admin Routes
-  server.get("/api/admin/sites", getAdminSites);
-  server.get("/api/admin/organizations", getAdminOrganizations);
-  server.get("/api/admin/service-event-count", getAdminServiceEventCount);
-  server.post("/api/admin/telemetry", collectTelemetry);
-
-  // AppSumo Routes
-  const { activateAppSumoLicense } = await import("./api/as/activate.js");
-  const { handleAppSumoWebhook } = await import("./api/as/webhook.js");
-
-  server.post("/api/as/activate", activateAppSumoLicense);
-  server.post("/api/as/webhook", handleAppSumoWebhook);
-}
-
 server.post("/track", trackEvent);
 server.post("/api/track", trackEvent);
 
@@ -457,9 +419,7 @@ const start = async () => {
     await Promise.all([initializeClickhouse(), initPostgres()]);
 
     telemetryService.startTelemetryCron();
-    if (IS_CLOUD) {
-      weeklyReportService.startWeeklyReportCron();
-    }
+    weeklyReportService.startWeeklyReportCron();
 
     // Start the server first
     await server.listen({ port: 3001, host: "0.0.0.0" });
