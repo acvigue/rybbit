@@ -1,5 +1,5 @@
 import { betterAuth } from "better-auth";
-import { admin, captcha, emailOTP, organization, apiKey } from "better-auth/plugins";
+import { admin, captcha, emailOTP, organization, apiKey, genericOAuth } from "better-auth/plugins";
 import dotenv from "dotenv";
 import { asc, eq } from "drizzle-orm";
 import pg from "pg";
@@ -7,7 +7,7 @@ import pg from "pg";
 import { db } from "../db/postgres/postgres.js";
 import * as schema from "../db/postgres/schema.js";
 import { user } from "../db/postgres/schema.js";
-import { DISABLE_SIGNUP, IS_CLOUD } from "./const.js";
+import { DISABLE_SIGNUP, INTERNAL_AUTHENTICATION_ENABLED, IS_CLOUD, getOIDCProviders, getSocialProviders } from "./const.js";
 import { sendEmail, sendInvitationEmail } from "./email/email.js";
 
 dotenv.config();
@@ -32,13 +32,21 @@ const pluginList = [
       );
     },
   }),
-  emailOTP({
-    async sendVerificationOTP({ email, otp, type }) {
-      let subject, htmlContent;
+  genericOAuth({
+    // OIDC back-redirect will only work if backend and frontend are running on the same port.
+    // For development, it will redirect back to the backend, and you will manually need to go back to the frontend.
+    //
+    // This is fine, because there's really no need for yet another seperate env variable for frontend URL just for dev.
+    config: getOIDCProviders()
+  }),
+  ...(INTERNAL_AUTHENTICATION_ENABLED ? [
+    emailOTP({
+      async sendVerificationOTP({ email, otp, type }) {
+        let subject, htmlContent;
 
-      if (type === "sign-in") {
-        subject = "Your Rybbit Sign-In Code";
-        htmlContent = `
+        if (type === "sign-in") {
+          subject = "Your Rybbit Sign-In Code";
+          htmlContent = `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0c0c0c; color: #e5e5e5;">
             <h2 style="color: #ffffff; font-size: 24px; margin-bottom: 20px;">Your Sign-In Code</h2>
             <p>Here is your one-time password to sign in to Rybbit:</p>
@@ -49,9 +57,9 @@ const pluginList = [
             <p>If you didn't request this code, you can safely ignore this email.</p>
           </div>
         `;
-      } else if (type === "email-verification") {
-        subject = "Verify Your Email Address";
-        htmlContent = `
+        } else if (type === "email-verification") {
+          subject = "Verify Your Email Address";
+          htmlContent = `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0c0c0c; color: #e5e5e5;">
             <h2 style="color: #ffffff; font-size: 24px; margin-bottom: 20px;">Verify Your Email</h2>
             <p>Here is your verification code for Rybbit:</p>
@@ -62,9 +70,9 @@ const pluginList = [
             <p>If you didn't request this code, you can safely ignore this email.</p>
           </div>
         `;
-      } else if (type === "forget-password") {
-        subject = "Reset Your Password";
-        htmlContent = `
+        } else if (type === "forget-password") {
+          subject = "Reset Your Password";
+          htmlContent = `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0c0c0c; color: #e5e5e5;">
             <h2 style="color: #ffffff; font-size: 24px; margin-bottom: 20px;">Reset Your Password</h2>
             <p>You requested to reset your password for Rybbit. Here is your one-time password:</p>
@@ -75,21 +83,21 @@ const pluginList = [
             <p>If you didn't request this code, you can safely ignore this email.</p>
           </div>
         `;
-      }
+        }
 
-      if (subject && htmlContent) {
-        await sendEmail(email, subject, htmlContent);
-      }
-    },
-  }),
+        if (subject && htmlContent) {
+          await sendEmail(email, subject, htmlContent);
+        }
+      },
+    })] : []),
   // Add Cloudflare Turnstile captcha (cloud only)
   ...(IS_CLOUD && process.env.TURNSTILE_SECRET_KEY && process.env.NODE_ENV === "production"
     ? [
-        captcha({
-          provider: "cloudflare-turnstile",
-          secretKey: process.env.TURNSTILE_SECRET_KEY,
-        }),
-      ]
+      captcha({
+        provider: "cloudflare-turnstile",
+        secretKey: process.env.TURNSTILE_SECRET_KEY,
+      }),
+    ]
     : []),
 ];
 
@@ -103,21 +111,12 @@ export const auth = betterAuth({
     password: process.env.POSTGRES_PASSWORD,
   }),
   emailAndPassword: {
-    enabled: true,
+    enabled: INTERNAL_AUTHENTICATION_ENABLED,
     // Disable email verification for now
     requireEmailVerification: false,
     disableSignUp: DISABLE_SIGNUP,
   },
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    },
-    github: {
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-    },
-  },
+  socialProviders: getSocialProviders(),
   user: {
     additionalFields: {
       sendAutoEmailReports: {
@@ -175,5 +174,6 @@ export const auth = betterAuth({
         },
       },
     },
-  },
+  }
 });
+
