@@ -1,0 +1,17 @@
+name: Docker Build (Frontend)
+
+on:
+  push:
+    branches: [no-cloud]
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: acvigue/.github/.github/workflows/docker_build.yml@main
+    with:
+      image_name: ${{ github.repository }}_frontend
+      dockerfile: client/Dockerfile
+      context: "."
+      platforms: "linux/amd64,linux/arm64"
+      push: true
+      cache_scope: frontend-
