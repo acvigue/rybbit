@@ -191,6 +191,12 @@ export const normalizeOrigin = (input: string): string => {
 
 // Helper function to get IP address
 export const getIpAddress = (request: FastifyRequest): string => {
+  // Priority 0: X-Real-IP
+  const xRealIp = request.headers["x-real-ip"];
+  if (xRealIp && typeof xRealIp === "string") {
+    return xRealIp.trim();
+  }
+
   // Priority 1: Cloudflare header (already validated by CF)
   const cfConnectingIp = request.headers["cf-connecting-ip"];
   if (cfConnectingIp && typeof cfConnectingIp === "string") {
