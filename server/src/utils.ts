@@ -194,12 +194,14 @@ export const getIpAddress = (request: FastifyRequest): string => {
   // Priority 0: X-Real-IP
   const xRealIp = request.headers["x-real-ip"];
   if (xRealIp && typeof xRealIp === "string") {
+    console.log("X-Real-IP detected:", xRealIp);
     return xRealIp.trim();
   }
 
   // Priority 1: Cloudflare header (already validated by CF)
   const cfConnectingIp = request.headers["cf-connecting-ip"];
   if (cfConnectingIp && typeof cfConnectingIp === "string") {
+    console.log("CF-Connecting-IP detected:", cfConnectingIp);
     return cfConnectingIp.trim();
   }
 
@@ -212,6 +214,7 @@ export const getIpAddress = (request: FastifyRequest): string => {
       .filter(Boolean);
     if (ips.length > 0) {
       // Always use the first IP - the original client
+      console.log("X-Forwarded-For detected, using first IP:", ips[0]);
       return ips[0];
     }
   }
