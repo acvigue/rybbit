@@ -192,9 +192,9 @@ export const normalizeOrigin = (input: string): string => {
 // Helper function to get IP address
 export const getIpAddress = (request: FastifyRequest): string => {
   // Priority 0: X-Real-IP
-  const xRealIp = request.headers["x-real-ip"];
+  const xRealIp = request.headers["x-rybbit-ip"];
   if (xRealIp && typeof xRealIp === "string") {
-    console.log("X-Real-IP detected:", xRealIp);
+    console.log("X-rybbit-IP detected:", xRealIp);
     return xRealIp.trim();
   }
 
