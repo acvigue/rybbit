@@ -729,6 +729,102 @@ const allTools: Tool[] = [
     href: "/tools/bluesky-character-counter",
     category: "social-media",
   },
+  {
+    name: "Instagram Bio Generator",
+    description: "Generate compelling Instagram bios with AI within 150-character limit",
+    href: "/tools/instagram-bio-generator",
+    category: "social-media",
+  },
+  {
+    name: "X (Twitter) Bio Generator",
+    description: "Generate impactful X bios with AI within 160-character limit",
+    href: "/tools/x-bio-generator",
+    category: "social-media",
+  },
+  {
+    name: "TikTok Bio Generator",
+    description: "Generate engaging TikTok bios with AI within 80-character limit",
+    href: "/tools/tiktok-bio-generator",
+    category: "social-media",
+  },
+  {
+    name: "LinkedIn Bio Generator",
+    description: "Generate professional LinkedIn About sections with AI",
+    href: "/tools/linkedin-bio-generator",
+    category: "social-media",
+  },
+  {
+    name: "Threads Bio Generator",
+    description: "Generate conversational Threads bios with AI",
+    href: "/tools/threads-bio-generator",
+    category: "social-media",
+  },
+  {
+    name: "YouTube Channel Description Generator",
+    description: "Generate compelling YouTube channel descriptions with AI",
+    href: "/tools/youtube-bio-generator",
+    category: "social-media",
+  },
+  {
+    name: "Pinterest Bio Generator",
+    description: "Generate Pinterest profile bios with AI",
+    href: "/tools/pinterest-bio-generator",
+    category: "social-media",
+  },
+  {
+    name: "GitHub Bio Generator",
+    description: "Generate professional GitHub bios with AI",
+    href: "/tools/github-bio-generator",
+    category: "social-media",
+  },
+  {
+    name: "Twitch Bio Generator",
+    description: "Generate engaging Twitch bios with AI",
+    href: "/tools/twitch-bio-generator",
+    category: "social-media",
+  },
+  {
+    name: "Medium Bio Generator",
+    description: "Generate compelling Medium bios with AI",
+    href: "/tools/medium-bio-generator",
+    category: "social-media",
+  },
+  {
+    name: "Substack Bio Generator",
+    description: "Generate Substack author bios with AI",
+    href: "/tools/substack-bio-generator",
+    category: "social-media",
+  },
+  {
+    name: "Mastodon Bio Generator",
+    description: "Generate thoughtful Mastodon bios with AI",
+    href: "/tools/mastodon-bio-generator",
+    category: "social-media",
+  },
+  {
+    name: "Bluesky Bio Generator",
+    description: "Generate engaging Bluesky bios with AI",
+    href: "/tools/bluesky-bio-generator",
+    category: "social-media",
+  },
+  {
+    name: "Discord Bio Generator",
+    description: "Generate Discord About Me bios with AI",
+    href: "/tools/discord-bio-generator",
+    category: "social-media",
+  },
+  {
+    name: "Reddit Bio Generator",
+    description: "Generate Reddit profile bios with AI",
+    href: "/tools/reddit-bio-generator",
+    category: "social-media",
+  },
+  {
+    name: "Spotify Bio Generator",
+    description: "Generate Spotify artist bios with AI",
+    href: "/tools/spotify-bio-generator",
+    category: "social-media",
+  },
 ];
 
 interface RelatedToolsProps {

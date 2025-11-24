@@ -29,6 +29,7 @@ import { postGeneratorPlatformList } from "./components/post-generator-platform-
 import { usernameGeneratorPlatformList } from "./components/username-generator-platform-configs";
 import { hashtagGeneratorPlatformList } from "./components/hashtag-generator-platform-configs";
 import { characterCounterPlatformList } from "./components/character-counter-platform-configs";
+import { bioGeneratorPlatformList } from "./components/bio-generator-platform-configs";
 import {
   SiDiscord,
   SiX,
@@ -292,6 +293,13 @@ const characterCounterTools = characterCounterPlatformList.map(platform => ({
   description: `Count characters for ${platform.name} posts and stay within limits.`,
 }));
 
+const bioGeneratorTools = bioGeneratorPlatformList.map(platform => ({
+  href: `/tools/${platform.id}-bio-generator`,
+  icon: platformIconMap[platform.id],
+  title: platform.displayName,
+  description: `Generate compelling ${platform.name} bios with AI.`,
+}));
+
 const socialMediaTools = [
   ...fontGeneratorTools,
   ...commentGeneratorTools,
@@ -300,6 +308,7 @@ const socialMediaTools = [
   ...usernameGeneratorTools,
   ...hashtagGeneratorTools,
   ...characterCounterTools,
+  ...bioGeneratorTools,
 ];
 
 function ToolCard({ tool }: { tool: { href: string; icon: any; title: string; description: string } }) {

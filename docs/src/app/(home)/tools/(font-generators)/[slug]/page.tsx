@@ -6,6 +6,7 @@ import PostGenerator from "../../components/PostGenerator";
 import UsernameGenerator from "../../components/UsernameGenerator";
 import { HashtagGenerator } from "../../components/HashtagGenerator";
 import { CharacterCounter } from "../../components/CharacterCounter";
+import { BioGenerator } from "../../components/BioGenerator";
 import { platformConfigs, platformList } from "../../components/platform-configs";
 import {
   commentPlatformConfigs,
@@ -31,6 +32,10 @@ import {
   characterCounterPlatformConfigs,
   characterCounterPlatformList,
 } from "../../components/character-counter-platform-configs";
+import {
+  bioGeneratorPlatformConfigs,
+  bioGeneratorPlatformList,
+} from "../../components/bio-generator-platform-configs";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -70,6 +75,10 @@ export async function generateStaticParams() {
     slug: `${platform.id}-character-counter`,
   }));
 
+  const bioGenerators = bioGeneratorPlatformList.map((platform) => ({
+    slug: `${platform.id}-bio-generator`,
+  }));
+
   return [
     ...fontGenerators,
     ...commentGenerators,
@@ -78,6 +87,7 @@ export async function generateStaticParams() {
     ...usernameGenerators,
     ...hashtagGenerators,
     ...characterCounters,
+    ...bioGenerators,
   ];
 }
 
@@ -86,6 +96,36 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
+
+  // Check if it's a bio generator
+  if (slug.endsWith("-bio-generator")) {
+    const platformId = slug.replace("-bio-generator", "");
+    const platform = bioGeneratorPlatformConfigs[platformId];
+
+    if (!platform) {
+      return { title: "Bio Generator Not Found" };
+    }
+
+    return {
+      title: `${platform.displayName} | AI-Powered ${platform.name} ${platform.bioType}`,
+      description: platform.description,
+      openGraph: {
+        title: platform.displayName,
+        description: platform.description,
+        type: "website",
+        url: `https://rybbit.com/tools/${platform.id}-bio-generator`,
+        siteName: "Rybbit Documentation",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: platform.displayName,
+        description: platform.description,
+      },
+      alternates: {
+        canonical: `https://rybbit.com/tools/${platform.id}-bio-generator`,
+      },
+    };
+  }
 
   // Check if it's a character counter
   if (slug.endsWith("-character-counter")) {
@@ -300,6 +340,192 @@ export async function generateMetadata({
 
 export default async function PlatformToolPage({ params }: PageProps) {
   const { slug } = await params;
+
+  // Check if it's a bio generator
+  if (slug.endsWith("-bio-generator")) {
+    const platformId = slug.replace("-bio-generator", "");
+    const platform = bioGeneratorPlatformConfigs[platformId];
+
+    // Handle invalid platform
+    if (!platform) {
+      notFound();
+    }
+
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      name: platform.displayName,
+      description: platform.description,
+      url: `https://rybbit.com/tools/${platform.id}-bio-generator`,
+      applicationCategory: "Utility",
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+      },
+      author: {
+        "@type": "Organization",
+        name: "Rybbit",
+        url: "https://rybbit.com",
+      },
+    };
+
+    const educationalContent = (
+      <>
+        <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">
+          About {platform.name} {platform.bioType}s
+        </h2>
+        <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed mb-6">
+          {platform.educationalContent}
+        </p>
+
+        <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-3">
+          How to Use This Tool
+        </h3>
+        <ol className="space-y-2 text-neutral-700 dark:text-neutral-300 mb-6">
+          <li>
+            <strong>Enter your name or brand</strong> - What should the bio be
+            about?
+          </li>
+          <li>
+            <strong>Add your profession or role</strong> - What do you do?
+          </li>
+          <li>
+            <strong>Include interests (optional)</strong> - What are you
+            passionate about?
+          </li>
+          <li>
+            <strong>Select your tone</strong> - Choose from{" "}
+            {platform.tones.length} tone options
+          </li>
+          <li>
+            <strong>Click "Generate {platform.bioType}"</strong> to get 3
+            unique variations
+          </li>
+          <li>
+            <strong>Copy and customize</strong> your favorite bio for{" "}
+            {platform.name}
+          </li>
+        </ol>
+
+        <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-3">
+          Available Tones
+        </h3>
+        <ul className="grid grid-cols-2 gap-2 text-sm text-neutral-700 dark:text-neutral-300 mb-6">
+          {platform.tones.map((tone) => (
+            <li key={tone} className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              {tone}
+            </li>
+          ))}
+        </ul>
+
+        <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-3">
+          Bio Best Practices for {platform.name}
+        </h3>
+        <ul className="space-y-2 text-neutral-700 dark:text-neutral-300 mb-6">
+          <li>
+            <strong>Be authentic:</strong> Let your personality shine through
+          </li>
+          <li>
+            <strong>Front-load important info:</strong> Put key information at
+            the beginning
+          </li>
+          <li>
+            <strong>Include a call-to-action:</strong> Tell people what to do
+            next
+          </li>
+          <li>
+            <strong>Use keywords:</strong> Include relevant terms for
+            discoverability
+          </li>
+          <li>
+            <strong>Stay within the limit:</strong> Keep it under{" "}
+            {platform.characterLimit} characters
+          </li>
+          <li>
+            <strong>Update regularly:</strong> Keep your bio current with your
+            focus
+          </li>
+        </ul>
+
+        <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4 mb-6">
+          <h4 className="font-semibold text-emerald-900 dark:text-emerald-100 mb-2">
+            Character Limit
+          </h4>
+          <p className="text-sm text-emerald-800 dark:text-emerald-200">
+            {platform.name} {platform.bioType}s have a maximum of{" "}
+            {platform.characterLimit} characters. Make every character count!
+          </p>
+        </div>
+
+        <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-6">
+          <strong>Note:</strong> While this tool generates high-quality bios,
+          always personalize them to match your authentic voice and current
+          focus. The best bios are genuine and reflect who you really are.
+        </p>
+      </>
+    );
+
+    const faqs = [
+      {
+        question: `How does the ${platform.name} bio generator work?`,
+        answer: `This tool uses AI to create compelling ${platform.bioType}s based on your name, profession, interests, and chosen tone. It considers ${platform.name}'s ${platform.characterLimit}-character limit and platform culture to generate bios that resonate with your target audience.`,
+      },
+      {
+        question: "What tones are available?",
+        answer: `You can choose from ${platform.tones.length} tones: ${platform.tones.join(", ")}. Each tone is optimized for ${platform.name} and creates a different impression to match your personal brand.`,
+      },
+      {
+        question: "Should I edit the generated bios?",
+        answer:
+          "Yes! Generated bios are starting points. Customize them with specific details, achievements, or personality quirks that make you unique. The best bios combine AI efficiency with your authentic voice.",
+      },
+      {
+        question: "How many bios can I generate?",
+        answer:
+          "The tool generates 3 unique bio variations per request. You're limited to 5 requests per minute. If you need more options, try adjusting your inputs or tone selection.",
+      },
+      {
+        question: `What makes a good ${platform.name} bio?`,
+        answer: `A great ${platform.name} ${platform.bioType} is authentic, clear, and engaging. It quickly communicates who you are, what you do, and why people should follow or connect with you. ${platform.contextGuidelines}`,
+      },
+      {
+        question: "How can Rybbit help me grow on social media?",
+        answer: (
+          <>
+            Once you have a great bio, Rybbit helps you track engagement,
+            clicks, and growth on {platform.name}. Understand what content
+            resonates with your audience and optimize your strategy.{" "}
+            <a
+              href="https://rybbit.com"
+              className="text-emerald-600 hover:text-emerald-500 underline"
+            >
+              Start tracking for free
+            </a>
+            .
+          </>
+        ),
+      },
+    ];
+
+    return (
+      <ToolPageLayout
+        toolSlug={`${platform.id}-bio-generator`}
+        title={platform.displayName}
+        description={platform.description}
+        badge="AI-Powered Tool"
+        toolComponent={<BioGenerator platform={platform} />}
+        educationalContent={educationalContent}
+        faqs={faqs}
+        relatedToolsCategory="social-media"
+        ctaTitle={`Build your ${platform.name} presence with Rybbit`}
+        ctaDescription={`Track your growth and engagement on ${platform.name} to optimize your content strategy.`}
+        ctaEventLocation={`${platform.id}_bio_generator_cta`}
+        structuredData={structuredData}
+      />
+    );
+  }
 
   // Check if it's a character counter
   if (slug.endsWith("-character-counter")) {
