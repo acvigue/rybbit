@@ -4,7 +4,6 @@ import { AuthButton } from "@/components/auth/AuthButton";
 import { AuthError } from "@/components/auth/AuthError";
 import { AuthInput } from "@/components/auth/AuthInput";
 import { SocialButtons } from "@/components/auth/SocialButtons";
-import { Turnstile } from "@/components/auth/Turnstile";
 import { useExtracted } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -14,7 +13,6 @@ import { SpinningGlobe } from "../../components/SpinningGlobe";
 import { useSetPageTitle } from "../../hooks/useSetPageTitle";
 import { authClient } from "../../lib/auth";
 import { useConfigs } from "../../lib/configs";
-import { IS_CLOUD } from "../../lib/const";
 import { userStore } from "../../lib/userStore";
 
 export default function Page() {
@@ -25,7 +23,6 @@ export default function Page() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
-  const [turnstileToken, setTurnstileToken] = useState<string>("");
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,27 +31,11 @@ export default function Page() {
 
     setError("");
 
-    // Validate Turnstile token if in cloud mode and production
-    if (IS_CLOUD && process.env.NODE_ENV === "production" && !turnstileToken) {
-      setError(t("Please complete the captcha verification"));
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      const { data, error } = await authClient.signIn.email(
-        {
-          email,
-          password,
-        },
-        {
-          onRequest: context => {
-            if (IS_CLOUD && process.env.NODE_ENV === "production" && turnstileToken) {
-              context.headers.set("x-captcha-response", turnstileToken);
-            }
-          },
-        }
-      );
+      const { data, error } = await authClient.signIn.email({
+        email,
+        password,
+      });
       if (data?.user) {
         userStore.setState({
           user: data.user,
@@ -70,8 +51,6 @@ export default function Page() {
     }
     setIsLoading(false);
   };
-
-  const turnstileEnabled = IS_CLOUD && process.env.NODE_ENV === "production";
 
   // Auto-redirect to SSO if internal auth is disabled and there's only one OIDC provider
   useEffect(() => {
@@ -122,27 +101,16 @@ export default function Page() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     rightElement={
-                      IS_CLOUD && (
-                        <Link href="/reset-password" className="text-xs text-muted-foreground hover:text-primary">
-                          {t("Forgot password?")}
-                        </Link>
-                      )
+                      <Link href="/reset-password" className="text-xs text-muted-foreground hover:text-primary">
+                        {t("Forgot password?")}
+                      </Link>
                     }
                   />
-
-                  {turnstileEnabled && (
-                    <Turnstile
-                      onSuccess={token => setTurnstileToken(token)}
-                      onError={() => setTurnstileToken("")}
-                      onExpire={() => setTurnstileToken("")}
-                      className="flex justify-center"
-                    />
-                  )}
 
                   <AuthButton
                     isLoading={isLoading}
                     loadingText={t("Logging in...")}
-                    disabled={turnstileEnabled ? !turnstileToken || isLoading : isLoading}
+                    disabled={isLoading}
                   >
                     {t("Login")}
                   </AuthButton>
@@ -166,18 +134,16 @@ export default function Page() {
           </div>
         </div>
 
-        {!IS_CLOUD && (
-          <div className="text-xs text-muted-foreground mt-8">
-            <a
-              href="https://rybbit.com"
-              target="_blank"
-              rel="noopener"
-              title="Rybbit - Open Source Privacy-Focused Web Analytics"
-            >
-              {t("Open source web analytics powered by Rybbit")}
-            </a>
-          </div>
-        )}
+        <div className="text-xs text-muted-foreground mt-8">
+          <a
+            href="https://rybbit.com"
+            target="_blank"
+            rel="noopener"
+            title="Rybbit - Open Source Privacy-Focused Web Analytics"
+          >
+            {t("Open source web analytics powered by Rybbit")}
+          </a>
+        </div>
       </div>
 
       {/* Right panel - globe (hidden on mobile/tablet) */}

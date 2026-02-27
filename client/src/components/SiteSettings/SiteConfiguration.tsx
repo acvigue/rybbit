@@ -3,7 +3,7 @@
 import { AlertTriangle } from "lucide-react";
 import { useExtracted } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState, useCallback, ReactNode } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "@/components/ui/sonner";
 
 import {
@@ -28,9 +28,6 @@ import { normalizeDomain } from "@/lib/utils";
 import { IPExclusionManager } from "./IPExclusionManager";
 import { CountryExclusionManager } from "./CountryExclusionManager";
 import { GSCManager } from "./GSCManager";
-import { useStripeSubscription } from "../../lib/subscription/useStripeSubscription";
-import { Badge } from "../ui/badge";
-import { IS_CLOUD } from "../../lib/const";
 
 interface SiteConfigurationProps {
   siteMetadata: SiteResponse;
@@ -47,7 +44,6 @@ interface ToggleConfig {
   enabledMessage?: string;
   disabledMessage?: string;
   disabled?: boolean;
-  badge?: ReactNode;
 }
 
 export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: SiteConfigurationProps) {
@@ -185,43 +181,26 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
     },
   ];
 
-  const { data: subscription, isLoading: isSubscriptionLoading } = useStripeSubscription();
-
-  const sessionReplayDisabled = (!subscription?.planName.includes("pro") || (!!subscription?.isTrial && (subscription?.eventLimit ?? 0) >= 500_000)) && IS_CLOUD;
-  const standardFeaturesDisabled = !subscription?.planName.includes("standard") && !subscription?.planName.includes("pro") && !subscription?.planName.includes("appsumo") && IS_CLOUD;
-
   // Configuration for analytics feature toggles
   const analyticsToggles: ToggleConfig[] = [
-    ...(!subscription?.planName?.startsWith("appsumo") && !isSubscriptionLoading
-      ? [
-        {
-          id: "sessionReplay",
-          label: t("Session Replay"),
-          description: t("Record and replay user sessions to understand user behavior"),
-          value: toggleStates.sessionReplay,
-          key: "sessionReplay",
-          enabledMessage: t("Session replay enabled"),
-          disabledMessage: t("Session replay disabled"),
-          disabled: sessionReplayDisabled,
-          badge: <Badge variant="success">Pro</Badge>,
-        } as ToggleConfig,
-      ]
-      : []),
-    ...(IS_CLOUD
-      ? [
-        {
-          id: "webVitals",
-          label: t("Web Vitals"),
-          description: t("Track Core Web Vitals metrics (LCP, CLS, INP, FCP, TTFB)"),
-          value: toggleStates.webVitals,
-          key: "webVitals" as keyof SiteResponse,
-          enabledMessage: t("Web Vitals enabled"),
-          disabledMessage: t("Web Vitals disabled"),
-          disabled: standardFeaturesDisabled,
-          badge: <Badge variant="success">Standard</Badge>,
-        } as ToggleConfig,
-      ]
-      : []),
+    {
+      id: "sessionReplay",
+      label: t("Session Replay"),
+      description: t("Record and replay user sessions to understand user behavior"),
+      value: toggleStates.sessionReplay,
+      key: "sessionReplay",
+      enabledMessage: t("Session replay enabled"),
+      disabledMessage: t("Session replay disabled"),
+    },
+    {
+      id: "webVitals",
+      label: t("Web Vitals"),
+      description: t("Track Core Web Vitals metrics (LCP, CLS, INP, FCP, TTFB)"),
+      value: toggleStates.webVitals,
+      key: "webVitals" as keyof SiteResponse,
+      enabledMessage: t("Web Vitals enabled"),
+      disabledMessage: t("Web Vitals disabled"),
+    },
     {
       id: "trackSpaNavigation",
       label: t("SPA Navigation"),
@@ -269,8 +248,6 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
       key: "trackErrors",
       enabledMessage: t("Error tracking enabled"),
       disabledMessage: t("Error tracking disabled"),
-      disabled: standardFeaturesDisabled,
-      badge: <Badge variant="success">Standard</Badge>,
     },
     {
       id: "trackButtonClicks",
@@ -280,8 +257,6 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
       key: "trackButtonClicks",
       enabledMessage: t("Button click tracking enabled"),
       disabledMessage: t("Button click tracking disabled"),
-      disabled: standardFeaturesDisabled,
-      badge: <Badge variant="success">Standard</Badge>,
     },
     {
       id: "trackCopy",
@@ -291,8 +266,6 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
       key: "trackCopy",
       enabledMessage: t("Copy tracking enabled"),
       disabledMessage: t("Copy tracking disabled"),
-      disabled: standardFeaturesDisabled,
-      badge: <Badge variant="success">Standard</Badge>,
     },
     {
       id: "trackFormInteractions",
@@ -302,8 +275,6 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
       key: "trackFormInteractions",
       enabledMessage: t("Form interaction tracking enabled"),
       disabledMessage: t("Form interaction tracking disabled"),
-      disabled: standardFeaturesDisabled,
-      badge: <Badge variant="success">Standard</Badge>,
     },
   ];
 
@@ -314,7 +285,7 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
         <div key={toggle.id} className="flex items-center justify-between">
           <div>
             <Label htmlFor={toggle.id} className="text-sm font-medium text-foreground flex items-center gap-2">
-              {toggle.label} {toggle.badge && IS_CLOUD && toggle.badge}
+              {toggle.label}
             </Label>
             <p className="text-xs text-muted-foreground mt-1">{toggle.description}</p>
           </div>
@@ -344,7 +315,7 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
       <div className="space-y-4">{renderToggleSection(autoCaptureToggles, t("Auto Capture"))}</div>
       <IPExclusionManager siteId={siteMetadata.siteId} disabled={disabled} />
       <CountryExclusionManager siteId={siteMetadata.siteId} disabled={disabled} />
-      {IS_CLOUD && <GSCManager disabled={disabled} />}
+      <GSCManager disabled={disabled} />
       <div className="space-y-3">
         <div>
           <h4 className="text-sm font-semibold text-foreground">{t("Change Domain")}</h4>

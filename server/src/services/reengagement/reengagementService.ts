@@ -4,7 +4,6 @@ import * as cron from "node-cron";
 import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { db } from "../../db/postgres/postgres.js";
 import { member, sites, user } from "../../db/postgres/schema.js";
-import { IS_CLOUD } from "../../lib/const.js";
 import { isContactUnsubscribed, sendReengagementEmail } from "../../lib/email/email.js";
 import { createServiceLogger } from "../../lib/logger/logger.js";
 import { REENGAGEMENT_EMAILS } from "./reengagementContent.js";
@@ -150,10 +149,6 @@ class ReengagementService {
    * Start the daily cron job (10am UTC)
    */
   startReengagementCron(): void {
-    if (!IS_CLOUD) {
-      return;
-    }
-
     if (this.cronTask) {
       this.logger.warn("Re-engagement cron already running");
       return;

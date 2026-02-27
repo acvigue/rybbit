@@ -24,7 +24,6 @@ import { Upload, FileText, AlertCircle, CheckCircle2, Loader2, Trash2 } from "lu
 import { useExtracted } from "next-intl";
 import { useGetSiteImports, useCreateSiteImport, useDeleteSiteImport } from "@/api/admin/hooks/useImport";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { IS_CLOUD } from "@/lib/const";
 import { CsvParser } from "@/lib/import/csvParser";
 import { ImportPlatform } from "@/types/import";
 import { DisabledOverlay } from "@/components/DisabledOverlay";
@@ -184,7 +183,7 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
     });
   }, [data?.data]);
 
-  const hasActiveImport = IS_CLOUD && sortedImports.some(imp => imp.completedAt === null);
+  const hasActiveImport = sortedImports.some(imp => imp.completedAt === null);
 
   const isImportDisabled =
     !selectedFile || !selectedPlatform || !!fileError || createImportMutation.isPending || disabled || hasActiveImport;

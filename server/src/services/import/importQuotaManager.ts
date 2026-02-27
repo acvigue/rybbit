@@ -1,5 +1,4 @@
 import { ImportQuotaTracker } from "./importQuotaTracker.js";
-import { IS_CLOUD } from "../../lib/const.js";
 
 interface CachedTracker {
   tracker: ImportQuotaTracker;
@@ -46,8 +45,6 @@ class ImportQuotaManager {
   }
 
   startImport(organizationId: string): boolean {
-    if (!IS_CLOUD) return true;
-
     const now = Date.now();
     const startedAt = this.activeImports.get(organizationId);
 
@@ -87,6 +84,4 @@ class ImportQuotaManager {
 export const importQuotaManager = new ImportQuotaManager();
 
 // Background cleanup loop
-if (IS_CLOUD) {
-  setInterval(() => importQuotaManager.cleanup(), 15 * 60 * 1000);
-}
+setInterval(() => importQuotaManager.cleanup(), 15 * 60 * 1000);

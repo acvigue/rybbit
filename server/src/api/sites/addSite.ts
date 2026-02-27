@@ -1,10 +1,7 @@
 import { randomBytes } from "crypto";
-import { eq } from "drizzle-orm";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { db } from "../../db/postgres/postgres.js";
 import { sites } from "../../db/postgres/schema.js";
-import { IS_CLOUD } from "../../lib/const.js";
-import { getSubscriptionInner } from "../stripe/getSubscription.js";
 
 export async function addSite(
   request: FastifyRequest<{
@@ -71,38 +68,6 @@ export async function addSite(
 
   try {
     const userId = request.user?.id;
-
-    if (IS_CLOUD) {
-      const subscription = await getSubscriptionInner(organizationId);
-
-      if (sessionReplay && !subscription?.planName.includes("pro")) {
-        return reply.status(403).send({
-          error: "Session replay requires a Pro subscription",
-        });
-      }
-
-      const standardFeatures = { webVitals, trackErrors, trackButtonClicks, trackCopy, trackFormInteractions };
-      const requestedStandard = Object.entries(standardFeatures).filter(([, v]) => v);
-      if (requestedStandard.length > 0 && subscription?.status !== "active") {
-        return reply.status(403).send({
-          error: `The following features require an active subscription: ${requestedStandard.map(([k]) => k).join(", ")}`,
-        });
-      }
-
-      // Enforce site limit
-      const siteLimit = subscription?.siteLimit ?? null;
-      if (siteLimit !== null) {
-        const existingSites = await db
-          .select({ siteId: sites.siteId })
-          .from(sites)
-          .where(eq(sites.organizationId, organizationId));
-        if (existingSites.length >= siteLimit) {
-          return reply.status(403).send({
-            error: `You have reached the limit of ${siteLimit} website${siteLimit === 1 ? "" : "s"} for your plan. Please upgrade to add more.`,
-          });
-        }
-      }
-    }
 
     const id = randomBytes(6).toString("hex");
 

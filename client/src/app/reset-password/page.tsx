@@ -3,7 +3,6 @@
 import { AuthButton } from "@/components/auth/AuthButton";
 import { AuthError } from "@/components/auth/AuthError";
 import { AuthInput } from "@/components/auth/AuthInput";
-import { Turnstile } from "@/components/auth/Turnstile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useExtracted } from "next-intl";
 import Link from "next/link";
@@ -12,7 +11,6 @@ import { useState } from "react";
 import { RybbitLogo } from "../../components/RybbitLogo";
 import { useSetPageTitle } from "../../hooks/useSetPageTitle";
 import { authClient } from "../../lib/auth";
-import { IS_CLOUD } from "../../lib/const";
 
 export default function ResetPasswordPage() {
   useSetPageTitle("Reset Password");
@@ -24,7 +22,6 @@ export default function ResetPasswordPage() {
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [resetSuccess, setResetSuccess] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState<string>("");
   const router = useRouter();
 
   const handleRequestOTP = async (e: React.FormEvent) => {
@@ -32,27 +29,11 @@ export default function ResetPasswordPage() {
     setIsLoading(true);
     setError("");
 
-    // Validate Turnstile token if in cloud mode and production
-    if (IS_CLOUD && process.env.NODE_ENV === "production" && !turnstileToken) {
-      setError(t("Please complete the captcha verification"));
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      const { data, error } = await authClient.emailOtp.sendVerificationOtp(
-        {
-          email,
-          type: "forget-password",
-        },
-        {
-          onRequest: context => {
-            if (IS_CLOUD && process.env.NODE_ENV === "production" && turnstileToken) {
-              context.headers.set("x-captcha-response", turnstileToken);
-            }
-          },
-        }
-      );
+      const { data, error } = await authClient.emailOtp.sendVerificationOtp({
+        email,
+        type: "forget-password",
+      });
 
       if (error) {
         setError(error.message);
@@ -183,19 +164,10 @@ export default function ResetPasswordPage() {
                 onChange={e => setEmail(e.target.value)}
               />
 
-              {IS_CLOUD && process.env.NODE_ENV === "production" && (
-                <Turnstile
-                  onSuccess={token => setTurnstileToken(token)}
-                  onError={() => setTurnstileToken("")}
-                  onExpire={() => setTurnstileToken("")}
-                  className="flex justify-center"
-                />
-              )}
-
               <AuthButton
                 isLoading={isLoading}
                 loadingText={t("Sending code...")}
-                disabled={IS_CLOUD && process.env.NODE_ENV === "production" ? !turnstileToken || isLoading : isLoading}
+                disabled={isLoading}
               >
                 {t("Send Verification Code")}
               </AuthButton>

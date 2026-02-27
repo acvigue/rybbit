@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { useExtracted } from "next-intl";
 import { toast } from "@/components/ui/sonner";
 
-import { IS_CLOUD } from "../lib/const";
 import packageJson from "../../package.json";
 import { X } from "lucide-react";
 import { Button } from "./ui/button";
@@ -12,7 +11,6 @@ import { Button } from "./ui/button";
 export function VersionCheck() {
   const t = useExtracted();
   useEffect(() => {
-    if (IS_CLOUD) return;
     if (sessionStorage.getItem("version-check-done")) return;
 
     sessionStorage.setItem("version-check-done", "1");

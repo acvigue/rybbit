@@ -3,10 +3,8 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { db } from "../../db/postgres/postgres.js";
 import { sites, member, organization, memberSiteAccess } from "../../db/postgres/schema.js";
-import { IS_CLOUD, DEFAULT_EVENT_LIMIT } from "../../lib/const.js";
 import { getUserIdFromRequest } from "../../lib/auth-utils.js";
 import { processResults } from "../analytics/utils/utils.js";
-import { getSubscriptionInner } from "../stripe/getSubscription.js";
 
 export async function getSitesFromOrg(
   req: FastifyRequest<{
@@ -79,21 +77,7 @@ export async function getSitesFromOrg(
       }
     }
 
-    // Get subscription info
-    let subscription = null;
-    let monthlyEventCount = 0;
-    let eventLimit = DEFAULT_EVENT_LIMIT;
-
-    if (!IS_CLOUD) {
-      // Self-hosted version has unlimited events
-      eventLimit = Infinity;
-    } else {
-      subscription = await getSubscriptionInner(organizationId);
-      monthlyEventCount = subscription?.monthlyEventCount || 0;
-      eventLimit = subscription?.eventLimit || DEFAULT_EVENT_LIMIT;
-    }
-
-    // Enhance sites data with session counts and subscription info
+    // Enhance sites data with session counts
     const enhancedSitesData = sitesData.map(site => ({
       ...site,
       sessionsLast24Hours: sessionCountMap.get(site.siteId) || 0,
@@ -107,11 +91,11 @@ export async function getSitesFromOrg(
       organization: orgInfo[0] || null,
       sites: enhancedSitesData,
       subscription: {
-        monthlyEventCount,
-        eventLimit,
-        overMonthlyLimit: monthlyEventCount > eventLimit,
-        planName: subscription?.planName || "free",
-        status: subscription?.status || "free",
+        monthlyEventCount: 0,
+        eventLimit: Infinity,
+        overMonthlyLimit: false,
+        planName: "unlimited",
+        status: "active",
       },
     });
   } catch (err) {

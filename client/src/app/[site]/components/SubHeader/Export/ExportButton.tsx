@@ -15,14 +15,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../../../../../componen
 import { getTimezone, useStore } from "../../../../../lib/store";
 import { exportCsv } from "./exportCsv";
 import { exportPdf } from "./exportPdf";
-import { useStripeSubscription } from "../../../../../lib/subscription/useStripeSubscription";
 
 export function ExportButton() {
   const t = useExtracted();
   const [isExportingCsv, setIsExportingCsv] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const { site, time, filters } = useStore();
-  const { data: subscription } = useStripeSubscription();
 
   const handleExportPdf = async () => {
     if (!site) {
@@ -79,12 +77,10 @@ export function ExportButton() {
         </TooltipContent>
       </Tooltip>
       <DropdownMenuContent align="end">
-        {subscription?.planName !== "free" && !["appsumo-1", "appsumo-2"].includes(subscription?.planName ?? "") &&
-          <DropdownMenuItem onClick={handleExportPdf} disabled={isExportingPdf}>
-            <FileText className="h-4 w-4 mr-2" />
-            {isExportingPdf ? t("Generating PDF...") : t("Export as PDF Report")}
-          </DropdownMenuItem>
-        }
+        <DropdownMenuItem onClick={handleExportPdf} disabled={isExportingPdf}>
+          <FileText className="h-4 w-4 mr-2" />
+          {isExportingPdf ? t("Generating PDF...") : t("Export as PDF Report")}
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={handleExportCsv} disabled={isExportingCsv}>
           <FileArchive className="h-4 w-4 mr-2" />
           {isExportingCsv ? t("Exporting...") : t("Export as CSV (ZIP)")}

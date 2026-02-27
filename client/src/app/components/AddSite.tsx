@@ -19,11 +19,8 @@ import {
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Switch } from "../../components/ui/switch";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../../components/ui/tooltip";
 import { authClient } from "../../lib/auth";
-import { IS_CLOUD } from "../../lib/const";
 import { resetStore, useStore } from "../../lib/store";
-import { useStripeSubscription } from "../../lib/subscription/useStripeSubscription";
 import { isValidDomain, normalizeDomain } from "../../lib/utils";
 
 export function AddSite({ trigger, disabled }: { trigger?: React.ReactNode; disabled?: boolean }) {
@@ -33,12 +30,6 @@ export function AddSite({ trigger, disabled }: { trigger?: React.ReactNode; disa
 
   const { data: activeOrganization } = authClient.useActiveOrganization();
   const { data: sites, refetch } = useGetSitesFromOrg(activeOrganization?.id);
-  const { data: subscription } = useStripeSubscription();
-
-  const siteLimit = subscription?.siteLimit ?? null;
-  const isOverSiteLimit = IS_CLOUD && siteLimit !== null && (sites?.sites?.length || 0) >= siteLimit;
-
-  const finalDisabled = disabled || isOverSiteLimit;
 
   const [open, setOpen] = useState(false);
   const [domain, setDomain] = useState("");
@@ -86,44 +77,6 @@ export function AddSite({ trigger, disabled }: { trigger?: React.ReactNode; disa
     setSaltUserIds(false);
   };
 
-
-  if (subscription?.status !== "active" && IS_CLOUD) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          {trigger || (
-            <Button disabled title={t("Upgrade to Pro to add more websites")}>
-              <Plus className="h-4 w-4" />
-              {t("Add Website")}
-            </Button>
-          )}
-        </TooltipTrigger>
-        <TooltipContent>
-          {t("You need to be on an active subscription to add websites")}
-        </TooltipContent>
-      </Tooltip>
-    );
-  }
-
-  // Show upgrade message if disabled due to limit
-  if (isOverSiteLimit) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          {trigger || (
-            <Button disabled title={t("Upgrade to Pro to add more websites")}>
-              <Plus className="h-4 w-4" />
-              {t("Add Website")}
-            </Button>
-          )}
-        </TooltipTrigger>
-        <TooltipContent>
-          {t("You have reached the limit of {limit} websites. Upgrade to add more websites", { limit: String(siteLimit) })}
-        </TooltipContent>
-      </Tooltip>
-    );
-  }
-
   return (
     <div>
       <Dialog
@@ -137,7 +90,7 @@ export function AddSite({ trigger, disabled }: { trigger?: React.ReactNode; disa
       >
         <DialogTrigger asChild>
           {trigger || (
-            <Button disabled={finalDisabled}>
+            <Button disabled={disabled}>
               <Plus className="h-4 w-4" />
               {t("Add Website")}
             </Button>

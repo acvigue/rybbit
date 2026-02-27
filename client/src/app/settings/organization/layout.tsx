@@ -1,15 +1,13 @@
 "use client";
 
-import { CreditCard, Plus, Users } from "lucide-react";
+import { Plus, Users } from "lucide-react";
 import { useExtracted } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { CreateOrganizationDialog } from "../../../components/CreateOrganizationDialog";
 import { OrganizationSelector } from "../../../components/OrganizationSelector";
 import { Button } from "../../../components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "../../../components/ui/tabs";
 import { authClient } from "../../../lib/auth";
-import { IS_CLOUD } from "../../../lib/const";
 
 export default function OrganizationLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -23,17 +21,6 @@ export default function OrganizationLayout({ children }: { children: React.React
     (m) => m.userId === session?.user?.id
   );
   const isMember = currentMember?.role === "member";
-
-  // Determine active tab from pathname
-  const activeTab = pathname.includes("/subscription") ? "subscription" : "organization";
-
-  const handleTabChange = (value: string) => {
-    if (value === "organization") {
-      router.push("/settings/organization/members");
-    } else if (value === "subscription") {
-      router.push("/settings/organization/subscription");
-    }
-  };
 
   return (
     <>
@@ -61,24 +48,7 @@ export default function OrganizationLayout({ children }: { children: React.React
             {t("You don't have permission to view organization settings.")}
           </div>
         ) : (
-          <>
-            <Tabs value={activeTab} onValueChange={handleTabChange}>
-              <TabsList>
-                <TabsTrigger value="organization" className="flex items-center gap-2">
-                  <Users size={16} />
-                  {t("Organization")}
-                </TabsTrigger>
-                {IS_CLOUD && (
-                  <TabsTrigger value="subscription" className="flex items-center gap-2">
-                    <CreditCard size={16} />
-                    {t("Subscription")}
-                  </TabsTrigger>
-                )}
-              </TabsList>
-            </Tabs>
-
-            <div className="mt-6">{children}</div>
-          </>
+          <div className="mt-6">{children}</div>
         )}
       </div>
     </>

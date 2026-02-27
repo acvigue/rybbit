@@ -12,13 +12,12 @@ import { DialogFooter } from "./ui/dialog";
 import { DialogDescription } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { AlertCircle, AlertTriangle, Building2 } from "lucide-react";
+import { AlertCircle, Building2 } from "lucide-react";
 import { authClient } from "../lib/auth";
 import { toast } from "@/components/ui/sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { USER_ORGANIZATIONS_QUERY_KEY } from "../api/admin/hooks/useOrganizations";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
-import { useStripeSubscription } from "../lib/subscription/useStripeSubscription";
 
 interface CreateOrganizationDialogProps {
   open: boolean;
@@ -33,8 +32,6 @@ export function CreateOrganizationDialog({ open, onOpenChange, onSuccess, trigge
   const [slug, setSlug] = useState("");
   const [error, setError] = useState<string>("");
   const queryClient = useQueryClient();
-
-  const { data: subscription } = useStripeSubscription();
 
   // Generate slug from name when name changes
   const handleNameChange = (value: string) => {
@@ -159,15 +156,6 @@ export function CreateOrganizationDialog({ open, onOpenChange, onSuccess, trigge
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>{t("Error")}</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            {subscription?.status === "active" || subscription?.status === "trialing" && (
-              <Alert variant="warning">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>{t("Subscription Will Not Carry Over")}</AlertTitle>
-                <AlertDescription>
-                  {t("You can create another organization, but your current subscription only applies to your current organization.")}
-                </AlertDescription>
               </Alert>
             )}
           </div>

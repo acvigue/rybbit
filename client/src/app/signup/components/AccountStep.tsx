@@ -1,21 +1,17 @@
 import { AuthButton } from "@/components/auth/AuthButton";
 import { AuthInput } from "@/components/auth/AuthInput";
 import { SocialButtons } from "@/components/auth/SocialButtons";
-import { Turnstile } from "@/components/auth/Turnstile";
 import { ArrowRight } from "lucide-react";
 import { useExtracted } from "next-intl";
 import Link from "next/link";
 
 import { useConfigs } from "../../../lib/configs";
-import { IS_CLOUD } from "../../../lib/const";
 
 interface AccountStepProps {
   email: string;
   setEmail: (v: string) => void;
   password: string;
   setPassword: (v: string) => void;
-  turnstileToken: string;
-  setTurnstileToken: (v: string) => void;
   isLoading: boolean;
   onSubmit: () => void;
   setError: (v: string) => void;
@@ -26,8 +22,6 @@ export function AccountStep({
   setEmail,
   password,
   setPassword,
-  turnstileToken,
-  setTurnstileToken,
   isLoading,
   onSubmit,
   setError,
@@ -60,21 +54,13 @@ export function AccountStep({
               value={password}
               onChange={e => setPassword(e.target.value)}
             />
-            {IS_CLOUD && (
-              <Turnstile
-                onSuccess={token => setTurnstileToken(token)}
-                onError={() => setTurnstileToken("")}
-                onExpire={() => setTurnstileToken("")}
-                className="flex justify-center"
-              />
-            )}
             <AuthButton
               isLoading={isLoading}
               loadingText={t("Creating account...")}
               onClick={onSubmit}
               type="button"
               className="mt-6 transition-all duration-300 h-11"
-              disabled={IS_CLOUD ? !turnstileToken || isLoading : isLoading}
+              disabled={isLoading}
             >
               {t("Continue")}
               <ArrowRight className="ml-2 h-4 w-4" />

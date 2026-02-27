@@ -1,6 +1,5 @@
 import { Resend } from "resend";
 import { render } from "@react-email/components";
-import { IS_CLOUD } from "../const.js";
 import { InvitationEmail } from "./templates/InvitationEmail.js";
 import { LimitExceededEmail } from "./templates/LimitExceededEmail.js";
 import { OnboardingTipEmail } from "./templates/OnboardingTipEmail.js";
@@ -14,7 +13,7 @@ import type { ReengagementContent } from "../../services/reengagement/reengageme
 let resend: Resend | undefined;
 let marketingAudienceId: string | null = null;
 
-if (IS_CLOUD) {
+if (process.env.RESEND_API_KEY) {
   resend = new Resend(process.env.RESEND_API_KEY);
 }
 

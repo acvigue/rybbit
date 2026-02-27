@@ -1,5 +1,4 @@
 import { createClient } from "@clickhouse/client";
-import { IS_CLOUD } from "../../lib/const.js";
 
 export const clickhouse = createClient({
   url: process.env.CLICKHOUSE_HOST,
@@ -64,30 +63,6 @@ export const initializeClickhouse = async () => {
     `,
   });
 
-  if (IS_CLOUD) {
-    await clickhouse.exec({
-      query: `
-        ALTER TABLE events
-          ADD COLUMN IF NOT EXISTS company String DEFAULT '',
-          ADD COLUMN IF NOT EXISTS company_domain String DEFAULT '',
-          ADD COLUMN IF NOT EXISTS company_type LowCardinality(String) DEFAULT '',
-          ADD COLUMN IF NOT EXISTS company_abuse_score Nullable(Float64),
-  
-          ADD COLUMN IF NOT EXISTS asn Nullable(UInt32),
-          ADD COLUMN IF NOT EXISTS asn_org String DEFAULT '',
-          ADD COLUMN IF NOT EXISTS asn_domain String DEFAULT '',
-          ADD COLUMN IF NOT EXISTS asn_type LowCardinality(String) DEFAULT '',
-          ADD COLUMN IF NOT EXISTS asn_abuse_score Nullable(Float64),
-  
-          ADD COLUMN IF NOT EXISTS vpn LowCardinality(String) DEFAULT '',
-          ADD COLUMN IF NOT EXISTS crawler LowCardinality(String) DEFAULT '',
-          ADD COLUMN IF NOT EXISTS datacenter LowCardinality(String) DEFAULT '',
-          ADD COLUMN IF NOT EXISTS is_proxy Nullable(Boolean),
-          ADD COLUMN IF NOT EXISTS is_tor Nullable(Boolean),
-          ADD COLUMN IF NOT EXISTS is_satellite Nullable(Boolean)
-      `,
-    });
-  }
 
   // Create session replay tables
   await clickhouse.exec({
@@ -215,34 +190,4 @@ export const initializeClickhouse = async () => {
     `,
   });
 
-  if (IS_CLOUD) {
-    await clickhouse.exec({
-      query: `
-        CREATE TABLE IF NOT EXISTS hourly_events_by_site_mv_target (
-          event_hour DateTime,          -- The specific hour
-          site_id UInt16,
-          event_count UInt64            -- The count of events for that site in that hour
-        )
-        ENGINE = SummingMergeTree()     -- Sums 'event_count' for rows with the same sorting key
-        PARTITION BY toYYYYMM(event_hour)
-        ORDER BY (event_hour, site_id)
-        TTL event_hour + INTERVAL 60 DAY
-      `,
-    });
-
-    // 2. Create the Materialized View
-    // This MV will populate the 'hourly_events_by_site_mv_target' table.
-    await clickhouse.exec({
-      query: `
-        CREATE MATERIALIZED VIEW IF NOT EXISTS hourly_events_by_site_mv
-        TO hourly_events_by_site_mv_target -- Name of the target table
-        AS SELECT
-          toStartOfHour(timestamp) AS event_hour,
-          site_id,
-          count() AS event_count
-        FROM events
-        GROUP BY event_hour, site_id
-      `,
-    });
-  }
 };

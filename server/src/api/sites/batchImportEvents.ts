@@ -6,10 +6,8 @@ import { UmamiEvent, UmamiImportMapper } from "../../services/import/mappings/um
 import { SimpleAnalyticsEvent, SimpleAnalyticsImportMapper } from "../../services/import/mappings/simpleAnalytics.js";
 import { importQuotaManager } from "../../services/import/importQuotaManager.js";
 import { db } from "../../db/postgres/postgres.js";
-import { organization, sites } from "../../db/postgres/schema.js";
+import { sites } from "../../db/postgres/schema.js";
 import { eq } from "drizzle-orm";
-import { getBestSubscription } from "../../lib/subscriptionUtils.js";
-import { IS_CLOUD } from "../../lib/const.js";
 
 const batchImportRequestSchema = z
   .object({
@@ -58,25 +56,13 @@ export async function batchImportEvents(request: FastifyRequest<BatchImportReque
     const [siteRecord] = await db
       .select({
         organizationId: sites.organizationId,
-        stripeCustomerId: organization.stripeCustomerId,
       })
       .from(sites)
-      .leftJoin(organization, eq(sites.organizationId, organization.id))
       .where(eq(sites.siteId, siteId))
       .limit(1);
 
     if (!siteRecord || !siteRecord.organizationId) {
       return reply.status(404).send({ error: "Site not found" });
-    }
-
-    if (IS_CLOUD) {
-      const subscription = await getBestSubscription(siteRecord.organizationId, siteRecord.stripeCustomerId);
-
-      if (subscription.source === "free") {
-        return reply.status(403).send({
-          error: "Data import is not available on the free plan. Please upgrade to a paid plan.",
-        });
-      }
     }
 
     try {

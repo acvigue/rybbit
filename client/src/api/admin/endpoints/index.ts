@@ -23,22 +23,6 @@ export type {
   RemoveUserFromOrganizationInput,
 } from "./organizations";
 
-// Admin Organizations endpoints
-export { getAdminOrganizations } from "./adminOrganizations";
-export type { AdminOrganizationData } from "./adminOrganizations";
-
-// Admin Sites endpoints
-export { getAdminSites } from "./adminSites";
-export type { AdminSiteData } from "./adminSites";
-
-// Admin Service Event Count endpoints
-export { getAdminServiceEventCount } from "./adminServiceEventCount";
-export type {
-  ServiceEventCountResponse,
-  GetServiceEventCountResponse,
-  GetAdminServiceEventCountParams,
-} from "./adminServiceEventCount";
-
 // Excluded IPs endpoints
 export { fetchExcludedIPs, updateExcludedIPs } from "./excludedIPs";
 export type {

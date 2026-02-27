@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useExtracted } from "next-intl";
-import { IS_CLOUD } from "../../lib/const";
 import { useWhiteLabel } from "../../hooks/useIsWhiteLabel";
 import { HeartIcon } from "lucide-react";
 import { Button } from "../../components/ui/button";
@@ -23,19 +22,17 @@ export function Footer() {
           {/* Company Info */}
           <div className="space-y-4">
             <Image src="/rybbit/horizontal_white.svg" alt="Rybbit" width={140} height={0} style={{ height: "auto" }} className="dark:invert-0 invert" />
-            {!IS_CLOUD && (
-              <div className="space-y-3">
-                <div className="text-sm text-neutral-600 dark:text-neutral-200">
-                  {t("Liking Rybbit? Consider sponsoring the project!")}
-                </div>
-                <a href="https://github.com/sponsors/goldflag" target="_blank" rel="noopener noreferrer">
-                  <Button>
-                    <HeartIcon className="w-5 h-5 text-red-500" strokeWidth={3} />
-                    {t("Sponsor us")}
-                  </Button>
-                </a>
+            <div className="space-y-3">
+              <div className="text-sm text-neutral-600 dark:text-neutral-200">
+                {t("Liking Rybbit? Consider sponsoring the project!")}
               </div>
-            )}
+              <a href="https://github.com/sponsors/goldflag" target="_blank" rel="noopener noreferrer">
+                <Button>
+                  <HeartIcon className="w-5 h-5 text-red-500" strokeWidth={3} />
+                  {t("Sponsor us")}
+                </Button>
+              </a>
+            </div>
             {/* Social Media Links */}
             <div className="flex gap-4">
               <a
@@ -169,16 +166,14 @@ export function Footer() {
                   DPA
                 </a>
               </li>
-              {IS_CLOUD && (
-                <li>
-                  <a
-                    href="mailto:hello@rybbit.com"
-                    className="text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors"
-                  >
-                    {t("Support")}
-                  </a>
-                </li>
-              )}
+              <li>
+                <a
+                  href="mailto:hello@rybbit.com"
+                  className="text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors"
+                >
+                  {t("Support")}
+                </a>
+              </li>
             </ul>
           </div>
         </div>

@@ -4,10 +4,8 @@ import { createImport } from "../../services/import/importStatusManager.js";
 import { DateTime } from "luxon";
 import { z } from "zod";
 import { db } from "../../db/postgres/postgres.js";
-import { importPlatforms, organization, sites } from "../../db/postgres/schema.js";
+import { importPlatforms, sites } from "../../db/postgres/schema.js";
 import { eq } from "drizzle-orm";
-import { getBestSubscription } from "../../lib/subscriptionUtils.js";
-import { IS_CLOUD } from "../../lib/const.js";
 
 const createSiteImportRequestSchema = z
   .object({
@@ -42,10 +40,8 @@ export async function createSiteImport(request: FastifyRequest<CreateSiteImportR
     const [siteRecord] = await db
       .select({
         organizationId: sites.organizationId,
-        stripeCustomerId: organization.stripeCustomerId,
       })
       .from(sites)
-      .leftJoin(organization, eq(sites.organizationId, organization.id))
       .where(eq(sites.siteId, siteId))
       .limit(1);
 
@@ -54,16 +50,6 @@ export async function createSiteImport(request: FastifyRequest<CreateSiteImportR
     }
 
     const organizationId = siteRecord.organizationId;
-
-    if (IS_CLOUD) {
-      const subscription = await getBestSubscription(organizationId, siteRecord.stripeCustomerId);
-
-      if (subscription.source === "free") {
-        return reply.status(403).send({
-          error: "Data import is not available on the free plan. Please upgrade to a paid plan.",
-        });
-      }
-    }
 
     if (!importQuotaManager.startImport(organizationId)) {
       return reply.status(429).send({ error: "Only 1 concurrent import allowed per organization" });

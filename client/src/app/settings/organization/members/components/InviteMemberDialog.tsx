@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserPlus } from "lucide-react";
 import { useExtracted } from "next-intl";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "@/components/ui/sonner";
 
 import { authedFetch } from "@/api/utils";
@@ -22,10 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert } from "@/components/ui/alert";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { authClient } from "@/lib/auth";
-import { IS_CLOUD } from "@/lib/const";
-import { useStripeSubscription } from "@/lib/subscription/useStripeSubscription";
 
 import { SiteAccessMultiSelect } from "./SiteAccessMultiSelect";
 
@@ -36,16 +33,8 @@ interface InviteMemberDialogProps {
 }
 
 export function InviteMemberDialog({ organizationId, onSuccess, memberCount }: InviteMemberDialogProps) {
-  const { data: subscription } = useStripeSubscription();
   const queryClient = useQueryClient();
   const t = useExtracted();
-
-  const memberLimit = subscription?.memberLimit ?? null;
-  const isOverMemberLimit = useMemo(() => {
-    if (!IS_CLOUD) return false;
-    if (memberLimit === null) return false;
-    return memberCount >= memberLimit;
-  }, [memberLimit, memberCount]);
 
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"admin" | "member" | "owner">("member");
@@ -108,24 +97,6 @@ export function InviteMemberDialog({ organizationId, onSuccess, memberCount }: I
 
     inviteMutation.mutate();
   };
-
-  if (isOverMemberLimit) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span>
-            <Button disabled size="sm" variant="outline" title={t("Upgrade to Pro to add more members")}>
-              <UserPlus className="h-4 w-4 mr-1" />
-              {t("Invite Member")}
-            </Button>
-          </span>
-        </TooltipTrigger>
-        <TooltipContent>
-          {t("You have reached the limit of {limit} members. Upgrade to add more members", { limit: String(memberLimit) })}
-        </TooltipContent>
-      </Tooltip>
-    );
-  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

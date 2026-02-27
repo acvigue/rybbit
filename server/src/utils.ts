@@ -239,6 +239,12 @@ export const normalizeOrigin = (input: string): string => {
 
 // Helper function to get IP address
 export const getIpAddress = (request: FastifyRequest): string => {
+  // Priority 0: X-Rybbit-IP (custom header for reverse proxy setups)
+  const xRybbitIp = request.headers["x-rybbit-ip"];
+  if (xRybbitIp && typeof xRybbitIp === "string") {
+    return xRybbitIp.trim();
+  }
+
   // Priority 1: Cloudflare header (already validated by CF)
   const cfConnectingIp = request.headers["cf-connecting-ip"];
   if (cfConnectingIp && typeof cfConnectingIp === "string") {
@@ -253,7 +259,6 @@ export const getIpAddress = (request: FastifyRequest): string => {
       .map(ip => ip.trim())
       .filter(Boolean);
     if (ips.length > 0) {
-      // Always use the first IP - the original client
       return ips[0];
     }
   }

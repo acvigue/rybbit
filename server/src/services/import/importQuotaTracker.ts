@@ -5,7 +5,6 @@ import { sites, organization } from "../../db/postgres/schema.js";
 import { eq } from "drizzle-orm";
 import { processResults } from "../../api/analytics/utils/utils.js";
 import { getBestSubscription, type SubscriptionInfo } from "../../lib/subscriptionUtils.js";
-import { IS_CLOUD } from "../../lib/const.js";
 
 /**
  * Get the number of months of historical data allowed for import based on subscription tier
@@ -13,10 +12,6 @@ import { IS_CLOUD } from "../../lib/const.js";
 function getHistoricalWindowMonths(subscription: SubscriptionInfo): number {
   if (subscription.source === "free") {
     return 6;
-  }
-
-  if (subscription.source === "appsumo") {
-    return 24;
   }
 
   if (subscription.source === "stripe") {
@@ -41,10 +36,6 @@ export class ImportQuotaTracker {
   }
 
   static async create(organizationId: string): Promise<ImportQuotaTracker> {
-    if (!IS_CLOUD) {
-      return new ImportQuotaTracker(new Map(), Infinity, "190001");
-    }
-
     const [org] = await db
       .select({ stripeCustomerId: organization.stripeCustomerId })
       .from(organization)

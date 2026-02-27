@@ -1,5 +1,5 @@
 import { betterAuth } from "better-auth";
-import { APIError, createAuthMiddleware } from "better-auth/api";
+import { createAuthMiddleware } from "better-auth/api";
 import { admin, captcha, emailOTP, organization, apiKey, genericOAuth } from "better-auth/plugins";
 import dotenv from "dotenv";
 import { and, asc, eq } from "drizzle-orm";
@@ -8,7 +8,7 @@ import pg from "pg";
 import { db } from "../db/postgres/postgres.js";
 import * as schema from "../db/postgres/schema.js";
 import { invitation, member, memberSiteAccess, user } from "../db/postgres/schema.js";
-import { DISABLE_SIGNUP, INTERNAL_AUTHENTICATION_ENABLED, IS_CLOUD, getOIDCProviders, getSocialProviders } from "./const.js";
+import { DISABLE_SIGNUP, INTERNAL_AUTHENTICATION_ENABLED, getOIDCProviders, getSocialProviders } from "./const.js";
 import { addContactToAudience, sendInvitationEmail, sendOtpEmail, sendWelcomeEmail } from "./email/email.js";
 import { onboardingTipsService } from "../services/onboardingTips/onboardingTipsService.js";
 
@@ -71,8 +71,8 @@ const pluginList = [
         await sendOtpEmail(email, otp, type);
       },
     })] : []),
-  // Add Cloudflare Turnstile captcha (cloud only)
-  ...(IS_CLOUD && process.env.TURNSTILE_SECRET_KEY && process.env.NODE_ENV === "production"
+  // Add Cloudflare Turnstile captcha if configured
+  ...(process.env.TURNSTILE_SECRET_KEY && process.env.NODE_ENV === "production"
     ? [
       captcha({
         provider: "cloudflare-turnstile",
@@ -178,32 +178,6 @@ export const auth = betterAuth({
     },
   },
   hooks: {
-    before: createAuthMiddleware(async (ctx) => {
-      if (IS_CLOUD && ctx.path === "/organization/invite-member") {
-        const body = ctx.body as { organizationId?: string } | undefined;
-        const organizationId = body?.organizationId;
-
-        if (organizationId) {
-          // Lazy import to avoid circular dependency
-          const { getSubscriptionInner } = await import("../api/stripe/getSubscription.js");
-          const subscription = await getSubscriptionInner(organizationId);
-          const memberLimit = subscription?.memberLimit ?? null;
-
-          if (memberLimit !== null) {
-            const members = await db
-              .select({ id: member.id })
-              .from(member)
-              .where(eq(member.organizationId, organizationId));
-
-            if (members.length >= memberLimit) {
-              throw new APIError("FORBIDDEN", {
-                message: `You have reached the limit of ${memberLimit} member${memberLimit === 1 ? "" : "s"} for your plan. Please upgrade to add more.`,
-              });
-            }
-          }
-        }
-      }
-    }),
     after: createAuthMiddleware(async ctx => {
       // Handle invitation acceptance - copy site access from invitation to member
       if (ctx.path === "/organization/accept-invitation") {

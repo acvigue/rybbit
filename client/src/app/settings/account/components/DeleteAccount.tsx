@@ -18,10 +18,8 @@ import {
 } from "../../../../components/ui/alert-dialog";
 import { Button } from "../../../../components/ui/button";
 import { authClient } from "../../../../lib/auth";
-import { useStripeSubscription } from "../../../../lib/subscription/useStripeSubscription";
 
 export function DeleteAccount() {
-  const { data: subscription } = useStripeSubscription();
   const [isDeleting, setIsDeleting] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -51,8 +49,7 @@ export function DeleteAccount() {
     setIsOpen(false);
   };
 
-  const accountNotDeletable =
-    isDeleting || subscription?.planName.startsWith("standard") || subscription?.planName.startsWith("pro");
+  const accountNotDeletable = isDeleting;
 
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
