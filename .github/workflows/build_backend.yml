@@ -17,7 +17,7 @@ jobs:
       cache_scope: backend-
   deploy:
     needs: build
-    uses: acvigue/github-common/.github/workflows/argocd_redeploy.yml@main
+    uses: acvigue/.github/.github/workflows/argocd_redeploy.yml@main
     with:
       argocd_repo: "koiosdigital/kubernetes"
       deployment_file: "base/analytics/backend-deployment.yaml"
