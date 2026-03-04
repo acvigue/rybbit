@@ -15,3 +15,10 @@ jobs:
       platforms: "linux/amd64,linux/arm64"
       push: true
       cache_scope: backend-
+  deploy:
+    needs: build
+    uses: acvigue/github-common/.github/workflows/argocd_redeploy.yml@main
+    with:
+      argocd_repo: "koiosdigital/kubernetes"
+      deployment_file: "base/analytics/backend-deployment.yaml"
+    secrets: inherit
